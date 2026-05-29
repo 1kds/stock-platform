@@ -163,22 +163,42 @@ npm run dev
 
 | 단계 | 상태 | 내용 |
 |------|------|------|
-| 1. 화면 구성 (Mock) | 🔄 진행 중 | 골조 완성(레이아웃·메인 Top3 동작), 세부 페이지 남음 |
+| 1. 화면 구성 (Mock) | 🔄 진행 중 | 레이아웃+메인 Top3 렌더링 검증 완료, 세부(지표·차트·이력)·서브페이지 남음 |
 | 2. FastAPI 백엔드 | ✅ 기본 완료 | 엔드포인트 4개 + /health, Mock 반환, 실HTTP 검증됨 |
 | 3. HDFS 실연동 | ⏳ 예정 | pyarrow namenode 연결, Mock→실데이터 |
 | 4. K8s 배포 | ⏳ 예정 | Dockerfile, Deployment YAML, 통합 테스트 |
 
 ---
 
-## 8. 다음 작업 체크리스트
+## 8. 앞으로 할 일 — 웹 디자인 단계별 (Mock 고정)
 
-- [x] Mock 데이터 JSON 4종 (top3 / scores / tracking / backtest 응답 샘플)
-- [x] FastAPI 기본 구조 — 엔드포인트 4개 + `/health`, Mock JSON 그대로 반환
-- [~] Next.js 메인 대시보드 — Top3 카드+모달 동작. 요약 지표·30일 차트·이력 테이블 남음
-- [x] Top3 모달 팝업 (항목별 점수 바 차트)
-- [ ] 백테스팅 페이지 (입력 폼 + 결과 차트) — 현재 placeholder
-- [ ] 트래킹 페이지 (이력 목록 + 적중률) — 현재 placeholder
-- [ ] HDFS 연동 — pyarrow 실제 Parquet 읽기 (수집/분석 완료 후)
+> **방침: 앞으로 프론트 UI/디자인에만 집중. 데이터는 계속 Mock (`USE_MOCK=true`).**
+> HDFS 실연동(3단계)·K8s(4단계)는 수집/분석/인프라 팀 작업 끝난 뒤로 미룸.
+> 새 화면에 데이터가 더 필요하면 **`web/backend/mock/*.json`만 보강** (백엔드 로직·HDFS 손 안 댐).
+
+**✅ 완료**
+- [x] Mock JSON 4종 + FastAPI 엔드포인트 4개 + `/health`
+- [x] 레이아웃(네비+사이드바), 메인 Top3 카드 + 점수 모달
+- [x] 로컬 실행·화면 렌더링 검증 (Puppeteer 스크린샷 OK)
+
+**📍 1단계 — 메인 대시보드 완성** ⬅ 다음 작업
+- [ ] 요약 지표 카드 3개 (적중률 / 평균 수익률 / 업데이트 시간)
+- [ ] 30일 수익률 차트 (Recharts 선그래프)
+- [ ] 최근 5일 추천 이력 테이블 (날짜 / 1·2·3위 / 평균 수익률 / 적중 ✅❌)
+
+**📍 2단계 — 트래킹 페이지** (1단계 컴포넌트 재사용)
+- [ ] 추천 이력 목록 (실제 수익률 T+3·T+5)
+- [ ] 적중률 + 기간 필터 (최근 1주 / 1개월 / 전체)
+
+**📍 3단계 — 백테스팅 페이지**
+- [ ] 입력 폼 (기간 DatePicker · 지표 체크박스 · 보유기간 라디오 · 실행 버튼)
+- [ ] 결과 (기간별 수익률 차트 · 승률 · 요약 테이블)
+
+**📍 4단계 — 디자인 폴리시**
+- [ ] 점수 색상 규칙, 로딩/에러/빈 상태, 반응형, (다크모드 선택)
+
+**🔜 나중 (디자인 외 — 타 팀 작업 후)**
+- [ ] HDFS 연동 (pyarrow, `data_source.py`의 `USE_MOCK` 분기 교체)
 - [ ] Docker 이미지 + K8s 배포 (허재성 협업)
 
 ---
@@ -189,4 +209,5 @@ npm run dev
 
 - **2026-05-29**: 팀 문서 구조 정리 — 공통 `common.md` + 개인 `sy.md` 분리 생성. 아직 웹 코드 착수 전(1단계 Mock 예정).
 - **2026-05-29**: 기술 스택 확정 — 하우스 스택(Jyos/whatcook) 따라 Next 16 + App Router + shadcn/ui(neutral/lucide) + Tailwind v4, 백엔드 FastAPI + pyarrow. 폴더는 web/frontend + web/backend. (Supabase/Toss/AI 라이브러리는 드롭)
-- **2026-05-29**: 폴더 정리 + 스캐폴딩 완료. 백엔드(FastAPI): config/schemas/data_source/main + mock 4종, venv 설치, 5개 엔드포인트 실HTTP 검증 통과. 프론트(Next 16.2.6 + shadcn base-nova): 레이아웃(네비+사이드바), 메인 페이지 Top3 카드+점수 모달, backtest/tracking placeholder, lib/api.ts(타입+fetch). `npm run build` 통과. **다음: 메인 페이지 나머지(요약지표·차트·이력) → 백테스팅/트래킹 페이지 채우기.**
+- **2026-05-29**: 폴더 정리 + 스캐폴딩 완료. 백엔드(FastAPI): config/schemas/data_source/main + mock 4종, venv 설치, 5개 엔드포인트 실HTTP 검증 통과. 프론트(Next 16.2.6 + shadcn base-nova): 레이아웃(네비+사이드바), 메인 페이지 Top3 카드+점수 모달, backtest/tracking placeholder, lib/api.ts(타입+fetch). `npm run build` 통과.
+- **2026-05-29**: 로컬 서버 띄워 화면 검증 완료. 백엔드 8000 + 프론트(포트 3000은 `current` 프로젝트가 점유 중이라 **3001**로 뜸). Puppeteer 스크린샷 — 메인 대시보드에 Top3 카드(삼성전자90/NAVER80/SK하이닉스70) 정상 렌더링 확인. CORS를 localhost 전 포트 허용으로 수정(`main.py`). **방침 확정: 앞으로 프론트 디자인만, 데이터는 Mock 고정** (8장 단계 참고). 다음: 1단계 메인 대시보드(요약 지표 카드)부터.
