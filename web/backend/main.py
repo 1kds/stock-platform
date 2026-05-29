@@ -28,6 +28,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=config.CORS_ORIGINS,
+    allow_origin_regex=r"http://localhost:\d+",  # 개발 중 localhost 모든 포트 허용(3000/3001 등)
     allow_methods=["*"],
     allow_headers=["*"],
 )
