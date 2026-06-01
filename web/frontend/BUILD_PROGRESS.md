@@ -17,8 +17,8 @@
 - [x] 2. Atoms: Button · ScoreBadge(기존) · TrendChip · Tag · StatusDot · Avatar · LogoMark (4파일, tsc 통과)
 - [x] 3. Molecules: StatCard · ScoreBar · Top3Card · NavItem · DatePill · SearchInput · Dropdown · Segmented · ReportCard (4파일, tsc 통과). ※ TableRow는 별도 분자 대신 organisms에서 ui/table로 직접 구성.
 - [x] 4. Organisms (14/14, tsc 통과·커밋): Topbar·Sidebar·StateViews·KpiGrid·Top3Grid·ReturnChart·HistoryTable·StockDetailModal·ScoresTable·TrackingTable·ReportFeed·BacktestForm·BacktestResult·AboutSections. ※ AboutSections는 Figma 7,650px 대비 핵심 섹션 condensed 버전(히어로·파이프라인·점수표·스택·팀+개요).
-- [ ] 5. AppShell(layout) + 페이지: / · /scores · /backtest · /tracking · /about · /report
-- [ ] 6. 백엔드 mock 정합 (대부분 충분 — 필요시 소폭)
+- [x] 5. AppShell(layout 재작성: Topbar+Sidebar+밝은 캔버스) + 페이지 6개(/ ·/scores ·/backtest ·/tracking ·/about ·/report). 구 Top3Card 제거. tsc + `next build`(7라우트 프리렌더) 통과.
+- [x] 6. 백엔드 mock 정합 — 4종 모두 UI에 충분(확인 완료, 보강 불필요).
 - [ ] 7. 서버 기동 + Puppeteer 페이지별 검증 (메인/scores/backtest/tracking/about/report)
 - [ ] 8. design-qa: build/typecheck/lint/토큰/Story
 - [ ] 9. 단위별 커밋 + sy.md 갱신
