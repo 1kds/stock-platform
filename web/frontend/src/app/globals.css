@@ -75,7 +75,7 @@
   --brand-cream: #f3e9d2;
 
   /* === 시맨틱 토큰 (브랜드로 remap) === */
-  --background: oklch(1 0 0);
+  --background: #f7f8f8;
   --foreground: #114b5f;
   --card: oklch(1 0 0);
   --card-foreground: #114b5f;
