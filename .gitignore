@@ -15,5 +15,13 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 
+# storybook
+storybook-static/
+
 # misc
 .DS_Store
+
+# 디자인 시스템 하네스 (조상윤 로컬 전용 — 팀 커밋 안 함)
+.claude/settings.local.json
+.claude/hooks/
+.claude/agents/
