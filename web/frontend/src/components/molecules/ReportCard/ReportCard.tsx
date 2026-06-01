@@ -1,3 +1,4 @@
+import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TrendChip } from "@/components/atoms/TrendChip";
 import type { ReportCardProps } from "./ReportCard.types";
@@ -24,11 +25,12 @@ export function ReportCard({
         <span className="text-sm font-semibold text-primary">{date}</span>
         <span
           className={cn(
-            "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold",
+            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
             hit ? "bg-accent/10 text-accent" : "bg-down/10 text-down",
           )}
         >
-          {hit ? "✅ 적중" : "❌ 미적중"}
+          {hit ? <Check className="size-3.5" /> : <X className="size-3.5" />}
+          {hit ? "적중" : "미적중"}
         </span>
       </div>
       <p className="font-semibold text-foreground">{title}</p>

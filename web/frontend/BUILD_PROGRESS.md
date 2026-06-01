@@ -19,15 +19,24 @@
 - [x] 4. Organisms (14/14, tsc 통과·커밋): Topbar·Sidebar·StateViews·KpiGrid·Top3Grid·ReturnChart·HistoryTable·StockDetailModal·ScoresTable·TrackingTable·ReportFeed·BacktestForm·BacktestResult·AboutSections. ※ AboutSections는 Figma 7,650px 대비 핵심 섹션 condensed 버전(히어로·파이프라인·점수표·스택·팀+개요).
 - [x] 5. AppShell(layout 재작성: Topbar+Sidebar+밝은 캔버스) + 페이지 6개(/ ·/scores ·/backtest ·/tracking ·/about ·/report). 구 Top3Card 제거. tsc + `next build`(7라우트 프리렌더) 통과.
 - [x] 6. 백엔드 mock 정합 — 4종 모두 UI에 충분(확인 완료, 보강 불필요).
-- [ ] 7. 서버 기동 + Puppeteer 페이지별 검증 (메인/scores/backtest/tracking/about/report)
-- [ ] 8. design-qa: build/typecheck/lint/토큰/Story
-- [ ] 9. 단위별 커밋 + sy.md 갱신
+- [x] 7. 서버 기동 + Puppeteer 페이지별 검증 — 백엔드 :8000(use_mock) + 프론트 :3000, 6개 페이지 전부 실데이터 렌더 확인.
+- [x] 8. design-qa: next build(7라우트) ✅ · tsc ✅ · eslint ✅ · 하드코딩색 0 ✅ · story 규칙(훅) ✅ · build-storybook ✅
+- [x] 9. 단위별 커밋(atoms/molecules/organisms/pages/검증fix) + sy.md 갱신
 
-## 검증 결과 (페이지별)
-- (아직 없음)
+## 검증 결과 (페이지별 — Puppeteer 실서버)
+- / (메인): ✅ Top3 카드(강점태그 자동산출)·KPI 4·30일 차트·5일 이력. 상세 모달 연동.
+- /scores: ✅ 6행 점수표(등급색 뱃지)·검색·필터·세그먼트.
+- /backtest: ✅ 조건폼(체크/보유기간)·KPI 4·Top3 vs 시장 차트.
+- /tracking: ✅ 기간 세그먼트·KPI·T+3/T+5 테이블.
+- /about: ✅ petrol 히어로·파이프라인·점수표·스택·팀.
+- /report: ✅ 최신 featured + 이력 피드(추천이력 파생).
+- 공통 수정: 적중 ✅/❌ 이모지(헤드리스 두부) → lucide Check/X 아이콘으로 교체.
 
 ## 스킵/이슈 로그
-- 컴포넌트 stories(.stories.tsx)는 working app 우선 위해 우선 tsx/types/index 3파일로 진행, Storybook 스토리는 8단계에서 일괄 보강 예정. (check-story-exists 훅은 이번 세션 미적용)
+- check-story-exists 훅이 실제로 활성이어서 모든 컴포넌트에 .stories.tsx 작성(4파일 규칙 충족).
+- AboutSections: Figma 7,650px 상세 프로즈 대비 핵심 섹션 condensed(히어로·개요·파이프라인·점수표·스택·팀). 전체 프로즈는 후속 확장 가능.
+- TableRow 분자: 미생성(테이블은 ui/table로 organisms에서 직접 구성).
+- 스토리 일부(Sidebar/Topbar 등 next 라우팅 의존)는 build-storybook 컴파일은 통과하나 브라우저 렌더는 라우터 컨텍스트 필요(검증은 실Next앱 Puppeteer로 수행).
 
 ## 작업 로그
 - iter1: 0단계 컨텍스트 수집 완료, BUILD_PROGRESS 생성. 1·2단계 착수.

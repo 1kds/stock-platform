@@ -1,3 +1,4 @@
+import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -38,7 +39,13 @@ export function HistoryTable({
               <TableCell className="text-right">
                 <TrendChip value={r.avg_return_t5} />
               </TableCell>
-              <TableCell className="text-center">{r.hit ? "✅" : "❌"}</TableCell>
+              <TableCell className="text-center">
+                {r.hit ? (
+                  <Check className="mx-auto size-4 text-accent" />
+                ) : (
+                  <X className="mx-auto size-4 text-muted-foreground" />
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
