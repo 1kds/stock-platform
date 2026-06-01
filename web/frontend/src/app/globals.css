@@ -39,6 +39,24 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* === 8team 브랜드 토큰 → Tailwind 유틸 클래스화 (bg-brand-petrol 등) === */
+  --color-brand-petrol: var(--brand-petrol);
+  --color-brand-green: var(--brand-green);
+  --color-brand-light: var(--brand-light);
+  --color-brand-sage: var(--brand-sage);
+  --color-brand-cream: var(--brand-cream);
+
+  /* 주가 등락 (증시 관례 — 브랜드색과 분리) → text-up / text-down / text-flat */
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-flat: var(--flat);
+
+  /* 점수 등급 → bg-score-high / bg-score-mid / bg-score-low */
+  --color-score-high: var(--score-high);
+  --color-score-mid: var(--score-mid);
+  --color-score-low: var(--score-low);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -49,72 +67,105 @@
 }
 
 :root {
+  /* === 브랜드 원시 토큰 (정의는 여기 한 곳에서만) === */
+  --brand-petrol: #114b5f;
+  --brand-green: #1a936f;
+  --brand-light: #88d498;
+  --brand-sage: #c6dabf;
+  --brand-cream: #f3e9d2;
+
+  /* === 시맨틱 토큰 (브랜드로 remap) === */
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: #114b5f;
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: #114b5f;
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --popover-foreground: #114b5f;
+  --primary: #114b5f;
+  --primary-foreground: #f3e9d2;
+  --secondary: #c6dabf;
+  --secondary-foreground: #114b5f;
+  --muted: #f3e9d2;
+  --muted-foreground: #4a6b73;
+  --accent: #1a936f;
+  --accent-foreground: #f3e9d2;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --border: #c6dabf;
+  --input: #c6dabf;
+  --ring: #1a936f;
+
+  /* 차트 = 브랜드 스케일 */
+  --chart-1: #114b5f;
+  --chart-2: #1a936f;
+  --chart-3: #88d498;
+  --chart-4: #c6dabf;
+  --chart-5: #9bb89a;
+
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* 사이드바 = 짙은 petrol */
+  --sidebar: #114b5f;
+  --sidebar-foreground: #f3e9d2;
+  --sidebar-primary: #1a936f;
+  --sidebar-primary-foreground: #f3e9d2;
+  --sidebar-accent: #1a936f;
+  --sidebar-accent-foreground: #f3e9d2;
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: #88d498;
+
+  /* === 주가 등락 (한국 증시: 상승=빨강, 하락=파랑) === */
+  --up: oklch(0.62 0.21 25);
+  --down: oklch(0.55 0.16 250);
+  --flat: #4a6b73;
+
+  /* === 점수 등급 === */
+  --score-high: #1a936f;
+  --score-mid: #88d498;
+  --score-low: #c6dabf;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #0c2e3a;
+  --foreground: #f3e9d2;
+  --card: #114b5f;
+  --card-foreground: #f3e9d2;
+  --popover: #114b5f;
+  --popover-foreground: #f3e9d2;
+  --primary: #88d498;
+  --primary-foreground: #0c2e3a;
+  --secondary: #1a936f;
+  --secondary-foreground: #f3e9d2;
+  --muted: #163d4b;
+  --muted-foreground: #c6dabf;
+  --accent: #1a936f;
+  --accent-foreground: #f3e9d2;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --ring: #88d498;
+
+  --chart-1: #88d498;
+  --chart-2: #1a936f;
+  --chart-3: #c6dabf;
+  --chart-4: #f3e9d2;
+  --chart-5: #5e9c86;
+
+  --sidebar: #0c2e3a;
+  --sidebar-foreground: #f3e9d2;
+  --sidebar-primary: #88d498;
+  --sidebar-primary-foreground: #0c2e3a;
+  --sidebar-accent: #1a936f;
+  --sidebar-accent-foreground: #f3e9d2;
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: #88d498;
+
+  --up: oklch(0.68 0.19 25);
+  --down: oklch(0.65 0.15 250);
+  --flat: #c6dabf;
+
+  --score-high: #1a936f;
+  --score-mid: #88d498;
+  --score-low: #c6dabf;
 }
 
 @layer base {
