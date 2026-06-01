@@ -182,27 +182,28 @@ npm run dev
 - 서브에이전트 4(figma-implementer/token-checker/design-qa/design-reviewer) + 훅 4(.mjs)
 - **Storybook 8(Vite 빌더)** + `globals.css` 브랜드 토큰 + 예시 atom `ScoreBadge`(4파일 규칙)
 
-**⚙️ 코드 (이전 세션)**
+**💻 코드 구현 — Figma → Next.js (완료 · 실서버 검증)**
 - 백엔드 FastAPI: 엔드포인트 4 + `/health` + Mock JSON 4종 (`USE_MOCK=true`)
-- 프론트 Next.js: 레이아웃(네비+사이드바) + 메인 Top3 카드 + 점수 모달 (※ Figma 디자인보다 구버전)
+- 프론트: 아토믹 **atoms 6 · molecules 9 · organisms 14**(각 4파일 + Storybook) + **AppShell**(layout: Topbar+Sidebar) + **6개 페이지**(`/` ·`/scores` ·`/backtest` ·`/tracking` ·`/about` ·`/report`), `lib/api` mock 연동, 로딩/에러 상태 보존
+- 검증: `tsc` · `next build`(7라우트) · `eslint` · 하드코딩색 0 · `build-storybook` 통과 + **Puppeteer로 6개 페이지 실데이터 렌더 확인**
+- 진행 기록: `web/frontend/BUILD_PROGRESS.md` (단계별 체크리스트·검증 결과)
 
 ---
 
 ## 8. 앞으로 해야 할 일
 
-> Figma 디자인은 사실상 완성. 이제 **디자인 → 코드**로 옮기는 단계가 핵심.
-> 데이터는 당분간 Mock 유지(`USE_MOCK=true`), 실연동·K8s는 타 팀 작업 후로 미룸.
+> Figma 디자인 + Next.js 코드 구현 완료(실서버 Puppeteer 검증). 데이터는 Mock 유지(`USE_MOCK=true`), 실연동·K8s는 타 팀 작업 후.
 
-**📍 1단계 — Figma 디자인 → Next.js 코드 반영** ⬅ 다음 작업
-> 현재 프론트 코드(`page.tsx` 등)는 Figma 디자인보다 구버전. 디자인을 코드로 구현하는 게 1순위.
-- [ ] 아토믹 폴더(atoms/molecules/organisms/templates) 구축 + 토큰 코드 정합
-- [ ] 메인 대시보드 코드 갱신: 앱 셸(상단바+사이드바)·KPI 4·Top3 슬림 카드·30일 차트·5일 이력 테이블
-- [ ] 서브 페이지 코드: 전체 종목 점수 / 백테스팅 / 트래킹 / 소개 / 리포트
-- [ ] 종목 상세 모달(7항목 점수바) + 상태 화면(로딩/에러/빈)
-- [ ] (`figma-implementer` 에이전트 활용 — 1컴포넌트=4파일 규칙)
+**✅ 완료 — Figma 디자인 → Next.js 코드** (atoms·molecules·organisms·AppShell·6페이지, design-qa + 실서버 검증 통과)
 
-**📍 2단계 — Mock 데이터 보강**
-- [ ] tracking/scores mock에 차트·이력·종목 점수 필드 채우기 (백엔드 로직·HDFS는 손 안 댐)
+**📍 다음 — 디테일 폴리시** ⬅ 다음 작업
+- [ ] 모바일 반응형 / (선택) 다크모드 / 미세 간격·정렬 다듬기
+- [ ] AboutSections 전체 프로즈 확장 (현재 핵심 섹션 condensed)
+- [ ] Segmented/Dropdown/SearchInput 실제 인터랙션(정렬·필터링) 연결
+- [ ] 컴포넌트 스토리 a11y 점검 (Storybook addon-a11y)
+
+**📍 후속 — Mock 데이터 보강** (필요 시)
+- [ ] 더 많은 종목·기간 mock 추가 (백엔드 로직·HDFS는 손 안 댐)
 
 **🔜 3단계 — HDFS 실연동** (수집/분석 팀 작업 후)
 - [ ] `data_source.py`의 `USE_MOCK` 분기 → pyarrow로 `/result` Parquet/JSON 읽기
