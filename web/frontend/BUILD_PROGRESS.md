@@ -15,7 +15,7 @@
 - [x] 0. 컨텍스트 수집 + 이 파일 생성
 - [x] 1. 기반: 토큰 정합(canvas bg #f7f8f8), 아토믹 폴더, cn
 - [x] 2. Atoms: Button · ScoreBadge(기존) · TrendChip · Tag · StatusDot · Avatar · LogoMark (4파일, tsc 통과)
-- [ ] 3. Molecules: StatCard · ScoreBar · Top3Card(재작성) · NavItem · DatePill · SearchInput · Dropdown · Segmented · TableRow · ReportCard
+- [x] 3. Molecules: StatCard · ScoreBar · Top3Card · NavItem · DatePill · SearchInput · Dropdown · Segmented · ReportCard (4파일, tsc 통과). ※ TableRow는 별도 분자 대신 organisms에서 ui/table로 직접 구성.
 - [ ] 4. Organisms: Topbar · Sidebar · KpiGrid · Top3Grid · ReturnChart · HistoryTable · ScoresTable · BacktestForm · BacktestResult · TrackingTable · StockDetailModal · StateViews · AboutSections · ReportFeed
 - [ ] 5. AppShell(layout) + 페이지: / · /scores · /backtest · /tracking · /about · /report
 - [ ] 6. 백엔드 mock 정합 (대부분 충분 — 필요시 소폭)
