@@ -42,12 +42,12 @@ export function HistoryTable({
               <TableCell className="text-center">
                 {r.hit ? (
                   <>
-                    <Check className="mx-auto size-4 text-accent" />
+                    <Check aria-hidden className="mx-auto size-4 text-accent" />
                     <span className="sr-only">적중</span>
                   </>
                 ) : (
                   <>
-                    <X className="mx-auto size-4 text-muted-foreground" />
+                    <X aria-hidden className="mx-auto size-4 text-muted-foreground" />
                     <span className="sr-only">미적중</span>
                   </>
                 )}

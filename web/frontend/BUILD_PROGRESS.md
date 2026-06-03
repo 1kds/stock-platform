@@ -117,3 +117,63 @@
 **이전 세션 잔여(여전히 유효)**
 - AboutSections는 Figma 7,650px 상세 대비 condensed였으나 이번 세션에 프로즈 본문 확장 완료. 표 구조는 유지.
 - TableRow 분자 미생성(테이블은 ui/table로 organisms에서 직접 구성).
+
+## 2026-06-04 — 2차 deferred 수정 세션
+
+> 직전 세션 리뷰 deferred 중 실제 버그·접근성(a11y)·토큰·계약 항목을 FIX. 보이는 숫자/텍스트/레이아웃 불변, tone(색)·aria·계약만 교정. 5개 영역 모두 green 유지.
+
+### 영역별 변경 요약
+
+**영역 1 — valueTone 부호 버그 수정**
+- 실제 버그: `BacktestResult.tsx`의 "초과수익률 (vs 시장)" StatCard가 `valueTone="up"` 하드코딩 → 음수 초과수익도 상승색 표시 → excess 부호 기준으로 교정. "최대 낙폭"(max_drawdown)도 하드코딩 `"down"` → 부호 기준화.
+- 부가 정밀화: 기존 `>= 0 ? "up" : "down"`(0을 상승색 오표시) 패턴을 부호 정확하게 통일 — 값>0 → "up", 값<0 → "down", 값==0 → "default"(중립). StatCard valueTone 지원값("default"|"up"|"down")만 사용, "flat" 미사용.
+  - `page.tsx`: "평균 수익률"(avg_return) 부호 기준화.
+  - `tracking/page.tsx`: "평균 수익률"(avgReturn) 부호 기준화.
+  - `BacktestResult.tsx`: "평균 수익률"(avg_return) 부호 기준화.
+- 건드리지 않은 항목(수익률 아님): 적중률·승률·추천 종목·마지막 업데이트·추적 기간. 색은 전부 기존 토큰(StatCard valueTone)에 위임.
+- 파일: `src/app/page.tsx`, `src/app/tracking/page.tsx`, `src/components/organisms/BacktestResult/BacktestResult.tsx`
+
+**영역 2 — 데이터 테이블 a11y (TrackingTable / HistoryTable / ScoresTable)**
+- 발견: 현재 상태가 브리프 가정보다 앞서 있었음 — TrackingTable·HistoryTable에 이미 sr-only '적중'/'미적중' 텍스트 존재, ScoresTable에 이미 aria-sort + useTableControls 정렬 존재. 누락분만 정밀 보강.
+- 적중 컬럼 아이콘(Check/X)에 `aria-hidden` 추가 — sr-only 텍스트와 이중 노출 방지(시각 변경 없음, 의미는 인접 sr-only가 담당).
+- ScoresTable 정렬 헤더 `aria-sort`(현재 정렬 컬럼=asc/desc, 그 외=none) 정상 확인. 장식용 정렬 아이콘(ChevronsUpDown/ArrowUp/ArrowDown)에 `aria-hidden` 부여(중복·모호 노출 방지).
+- 정렬 동작 버그 보정: 정렬 Dropdown onChange를 `if (v !== sort.key) toggleSort(...)`(같은 항목 재선택 무동작) → `onChange={(v) => toggleSort(v)}`로 단순화. toggleSort가 같은 key=방향 토글, 다른 key=desc 시작 로직을 이미 보유해 재선택 토글·신규선택 desc 둘 다 정상.
+- 파일: `src/components/organisms/TrackingTable/TrackingTable.tsx`, `src/components/organisms/HistoryTable/HistoryTable.tsx`, `src/components/organisms/ScoresTable/ScoresTable.tsx`
+
+**영역 3 — 폼·모달·상태 a11y**
+- SearchInput: 접근 가능한 이름 폴백 강화 — `aria-label ?? placeholder ?? "검색"`로 최종 기본값 보장. types.ts에 폴백 동작 문서화, stories에 placeholder 없이 aria-label만 주는 `WithAriaLabel` 스토리 추가.
+- BacktestForm: 이미 준수(보유 기간 묶음 `role="radiogroup"`+`aria-label`, 각 라디오 `role="radio"`/`aria-checked`) → 변경 불필요.
+- StockDetailModal: 이미 `DialogTitle`+`DialogDescription`(item.reason) 존재 → base-ui 경고 해소 상태 → 변경 불필요.
+- StateViews LoadingState: 컨테이너에 `role="status"`+`aria-live="polite"`+`aria-busy` 추가, sr-only "불러오는 중" 텍스트 삽입.
+- Dropdown: 키보드 지원 추가 — Esc 닫기(+트리거 포커스 복귀), ArrowUp/Down 순환, Home/End, Enter/Space 선택, Tab 시 닫고 자연 이동, 트리거에서 Arrow/Enter/Space로 열기. 열릴 때 현재 선택(없으면 첫 항목)으로 활성 인덱스 설정 후 listbox 포커스, `aria-activedescendant`·`aria-controls` 연결. 기존 controlled API·role/aria·외부클릭 닫기 보존.
+- 파일: `src/components/molecules/SearchInput/SearchInput.tsx`(+types/stories), `src/components/molecules/Dropdown/Dropdown.tsx`, `src/components/organisms/StateViews/StateViews.tsx`
+
+**영역 4 — 토큰/아이콘 정리**
+- LogoMark: 이미 green 베이스라인에서 lucide-react `TrendingUp` 마이그레이션 완료(이모지 없음) → 변경 불필요.
+- StatusDot: 색 단독 정보전달 보완 — TONE_NAME 맵(ok/warn/down → 정상/경고/하락) 추가, 점 span에 `role="img"`+`aria-label` 부여(시각 변경 없음). 누락된 Warn 스토리 추가.
+- AboutSections: 이미 시맨틱 토큰(`border-primary-foreground/15`) 적용, `border-white/15` 없음 → 변경 없음.
+- StatCard.stories: 누락된 'down' tone 스토리(Loss) 추가.
+- 파일: `src/components/atoms/StatusDot/StatusDot.tsx`(+stories), `src/components/molecules/StatCard/StatCard.stories.tsx`
+
+**영역 5 — market(시장) 필드 계약 확장 (KOSPI/KOSDAQ 필터)**
+- `web/backend/mock/scores.json`: 26개 종목 각 객체에 `"market"` 키 추가 — KRX 상장시장 기준 KOSDAQ 6종(247540 에코프로비엠, 086520 에코프로, 066970 엘앤에프, 091990 셀트리온헬스케어, 293490 카카오게임즈, 112040 위메이드), 나머지 20종 KOSPI. count(26)·기타 값 보존.
+- `web/backend/schemas.py`: `Optional` import 추가, ScoreRow에 `market: Optional[str] = None`(실데이터 없을 때 폴백) 추가.
+- `web/frontend/src/lib/api.ts`: ScoreRow 인터페이스에 `market?: string` 추가.
+- `common.md`: 6장 /api/scores 행에 market(KOSPI/KOSDAQ, Optional) 설명 추가, 9장 결정 로그에 [scores.market] 2026-06-04 한 줄 추가(Spark 팀에 daily_score·top3 market 컬럼 반영 요청 명시).
+- 파일: `web/backend/mock/scores.json`, `web/backend/schemas.py`, `web/frontend/src/lib/api.ts`, `common.md`
+
+### 최종 검증 결과 (전부 통과 — pass)
+- `npx tsc --noEmit` → ✅ 통과
+- `npm run lint` → ✅ 통과
+- `npm run build` → ✅ 통과
+- `npm run build-storybook` → ✅ 통과
+- backend-load (백엔드 import/로드) → ✅ 통과
+- mock-json (mock JSON 파싱) → ✅ 통과
+- 하드코딩 색 스캔(hardcodedColorHits) → ✅ 0건
+
+### 남은 deferred
+- **[a11y/디자인 판단]** StatusDot 'warn' tone이 등락 상승 토큰 `bg-up`을 의미상 오용(경고 상태에 상승색). '색 의미 통일' 디자인 판단 필요로 이번 패스 미수정.
+- **[소유 밖]** `lib/useTableControls.ts`(ScoresTable 정렬 훅) 미수정 — 현 toggleSort 로직이 브리프 요구 충족하여 변경 불요(참고용).
+- **[소유 밖]** `Dropdown` 같은 항목 재선택 시 onChange 발화 동작은 확인만(미수정) — ScoresTable 재선택 토글이 이 동작에 의존.
+- **[엣지/소유 밖]** StockDetailModal에서 open=true·item=null 엣지 케이스 시 DialogTitle/Description 미렌더로 base-ui 경고 가능성 있으나, 현재 호출부는 항상 item과 함께 열며 호출부 수정은 소유 밖이라 미변경.
+- **[계약/후속]** scores.market은 mock·타입·스키마에만 반영됨 — Spark 분석 산출(daily_score·top3)에 실제 market 컬럼 반영은 분석 팀 후속 작업 필요(common.md 9장 로그에 요청 명시).

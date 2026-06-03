@@ -30,3 +30,8 @@ function ControlledSearch() {
 export const Controlled: Story = {
   render: () => <ControlledSearch />,
 };
+
+/** a11y — placeholder 없이 aria-label로 접근 가능한 이름을 부여. */
+export const WithAriaLabel: Story = {
+  args: { placeholder: undefined, "aria-label": "종목 검색" },
+};

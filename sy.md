@@ -4,7 +4,7 @@
 > **공통 계약(HDFS 경로·컬럼 스키마·점수 체계·API 응답 모양·K8s 배치)은 → [`common.md`](./common.md) 참조.**
 > 여기엔 웹 전용 설계 + 진행 상태 + 다음 할 일 + 작업 로그만 둔다.
 >
-> _마지막 갱신: 2026-06-02_
+> _마지막 갱신: 2026-06-04_
 
 ---
 
@@ -196,14 +196,22 @@ npm run dev
 
 **✅ 완료 — Figma 디자인 → Next.js 코드** (atoms·molecules·organisms·AppShell·6페이지, design-qa + 실서버 검증 통과)
 
-**📍 다음 — 디테일 폴리시** ⬅ 다음 작업
-- [ ] 모바일 반응형 / (선택) 다크모드 / 미세 간격·정렬 다듬기
-- [ ] AboutSections 전체 프로즈 확장 (현재 핵심 섹션 condensed)
-- [ ] Segmented/Dropdown/SearchInput 실제 인터랙션(정렬·필터링) 연결
-- [ ] 컴포넌트 스토리 a11y 점검 (Storybook addon-a11y)
+**✅ 완료 — 디테일 폴리시 + 최적화 (2026-06-04, 자율 워크플로 1·2차)**
+- [x] 모바일 반응형 (햄버거 오프캔버스 드로어 사이드바·대시보드 그리드 스택·모달/표 반응형, 데스크톱 보존)
+- [x] AboutSections 전체 프로즈 확장 + '배포환경' 섹션 (common.md 기반)
+- [x] Segmented/Dropdown/SearchInput·테이블 정렬/필터 실제 인터랙션 연결 (`lib/useTableControls`)
+- [x] a11y 보강 (aria-sort·sr-only 적중·radiogroup·로딩 role=status·Dropdown 키보드·StatusDot aria)
+- [x] 코드 최적화 (점수 7항목 메타 단일화 `lib/scores`·`signedPercent` 통합·중복 className 추출)
+- [x] Mock 보강 (scores 6→26종목·tracking 5→17일·backtest horizon 추가)
+- [x] market(KOSPI/KOSDAQ) 필드 계약 확장 → 시장 Segmented 실작동 (mock·schemas·api / common.md 9장)
+- [x] 🐛 valueTone 부호 버그 수정 (음수 수익률이 상승색으로 표시되던 것 교정)
+- 검증: tsc·lint·`next build`(7라우트)·build-storybook·하드코딩색 0 + 백엔드 로드 전부 통과(직접 재검증)
 
-**📍 후속 — Mock 데이터 보강** (필요 시)
-- [ ] 더 많은 종목·기간 mock 추가 (백엔드 로직·HDFS는 손 안 댐)
+**📍 남은 폴리시 (선택 / 디자인 판단 필요)**
+- [ ] (선택) 다크모드 — globals.css·전 컴포넌트 광범위 영향이라 보류
+- [ ] (디자인 판단) StatusDot `warn`·ScoreBar `penalty`가 등락 `up` 토큰 차용 → 경고/감점 색 통일 결정
+- [ ] 백테스트 분석기간 편집 date picker (DatePill 표시전용 → 편집 컴포넌트화 필요)
+- [ ] 더 많은 종목·기간 mock 추가 (필요 시)
 
 **🔜 3단계 — HDFS 실연동** (수집/분석 팀 작업 후)
 - [ ] `data_source.py`의 `USE_MOCK` 분기 → pyarrow로 `/result` Parquet/JSON 읽기
@@ -234,4 +242,5 @@ npm run dev
 - **2026-06-01 (UI 단순화)**: 다중 에이전트 워크플로(4 패러다임 채점→합성→적대 검증)로 단순화 스펙 도출 후 Figma 적용. **떠있는 둥근 카드형 → 실무 SaaS 앱 셸**(풀폭 얇은 상단바 + 풀높이 사이드바 + 패딩 콘텐츠)로 재구성. 상단바: petrol 로고마크+워드마크 / 시계+"08:00 업데이트"+아바타(긴 풀네임·부제·2줄 날짜 제거). 사이드바: 짙은 petrol 유지(DESIGN.md 규약), MENU 라벨·점·파이프라인 푸터 제거, 아이콘+라벨, 활성=절제된 그린 좌측바+옅은 오버레이(과채도 알약 폐기). 본문: 날짜 페이지 헤더로, Top3 카드 슬림화(항목 점수바 제거), 1위 petrol 보더 위계. 원칙='색은 틀 아닌 데이터에만, green≠상승'. 3화면(메인/백테/트래킹) 전부 일관 적용.
 - **2026-06-01 (UI 디자인)**: **Figma에 전체 UI 디자인 완성** (fileKey `mwe4me38OXOG8M689kFms5`). 한 페이지에 4개 영역 — ① Components 라이브러리(ATOMS: Button·Score Badge·Trend Chip / MOLECULES: KPI Stat Card·Score Bar·Top3 Card·Nav Item), ② **메인 대시보드**(네비바+petrol 사이드바+KPI 4카드+Top3 추천카드 3개[점수바 포함]+30일 성과 막대차트+최근 5일 이력 테이블), ③ 백테스팅(조건 폼[기간·지표 체크·보유기간 라디오]+결과 KPI+누적수익률 차트+상세통계), ④ 트래킹(기간 필터+적중률 KPI+추천 이력 테이블 T+3/T+5/적중). 브랜드 5색 적용, 전부 auto-layout. 다음: 이 디자인을 `figma-implementer`로 Next 코드(4파일 규칙)로 변환.
 - **2026-06-01**: **아토믹 디자인 + 디자인 시스템 하네스 도입.** ① Figma: 본인 Pro 계정에 `8team` 프로젝트(608459028) + 파일 생성(fileKey `mwe4me38OXOG8M689kFms5`). ② 브랜드 5색(#114B5F petrol/#1A936F green/#88D498 light/#C6DABF sage/#F3E9D2 cream) → `globals.css` 토큰 + 시맨틱 remap(primary=petrol, accent=green, 사이드바=petrol). 등락색은 증시 관례(상승=빨강/하락=파랑) 별도 토큰 분리. ③ 하네스(로컬 전용, `.claude/` gitignore): 규칙 `web/frontend/CLAUDE.md`·`docs/DESIGN.md`, 에이전트 4종(figma-implementer/token-checker/design-qa/design-reviewer), 훅 4종(.mjs: 하드코딩색 감지·Story누락·`.env`보호·OS알림). 4종 훅 동작 검증 OK. ④ **Storybook 8** 도입 — Next 16이 `next/config` 제거해 `@storybook/nextjs`(webpack) 실패 → **Vite 빌더(@storybook/react-vite)** 로 전환해 빌드 성공. 첫 atom `ScoreBadge`(4파일 규칙) 생성, 빌드 CSS에 브랜드 토큰 컴파일 확인. 다음: atoms 더 만들고 메인 대시보드 컴포넌트(StatCard/ReturnChart/HistoryTable) 아토믹으로 재편.
-- **2026-06-04 (1차 자율 폴리시/최적화 — ultracode 워크플로 16에이전트)**: 디테일 폴리시 + 코드 최적화를 멀티에이전트 워크플로(파일 소유 분리로 병렬, 검증·적대리뷰 포함)로 일괄 수행. **A 반응형**(layout.tsx 모바일 햄버거 오프캔버스 드로어 사이드바, 대시보드 그리드 lg 스택, StockDetailModal 반응형 — 데스크톱 시각 보존), **B 인터랙션 실연결**(신규 `lib/useTableControls.ts` 정렬 훅 / ScoresTable 검색·업종/정렬 Dropdown·헤더정렬, TrackingTable 기간필터+KPI 동기화, BacktestForm 제어형+실행 클라이언트계산, Dropdown controlled 보강), **C 본문**(AboutSections 전체 프로즈 확장 — common.md 기반 사실, '배포환경' 섹션 추가 / Report 반응형), **D Mock 보강**(scores 6→26종목·tracking 5→17일·backtest horizon 추가). **최적화**: 점수 7항목 메타 단일화(`lib/scores.ts`), 부호 % 포맷 `signedPercent()` 통합, Dropdown className 추출. 검증 4종(tsc·lint·`next build` 9라우트·build-storybook) + 하드코딩색 0 전부 통과(직접 재검증). 진행기록 `web/frontend/BUILD_PROGRESS.md`. **남은 deferred는 2차에서**: valueTone='up' 하드코딩 버그(음수도 상승색), a11y(aria-sort·sr-only·radiogroup·로딩 status·Dropdown 키보드), 토큰(LogoMark 이모지→lucide·border-white/15), market 필드 계약 확장(시장 Segmento 실작동).
+- **2026-06-04 (1차 자율 폴리시/최적화 — ultracode 워크플로 16에이전트)**: 디테일 폴리시 + 코드 최적화를 멀티에이전트 워크플로(파일 소유 분리로 병렬, 검증·적대리뷰 포함)로 일괄 수행. **A 반응형**(layout.tsx 모바일 햄버거 오프캔버스 드로어 사이드바, 대시보드 그리드 lg 스택, StockDetailModal 반응형 — 데스크톱 시각 보존), **B 인터랙션 실연결**(신규 `lib/useTableControls.ts` 정렬 훅 / ScoresTable 검색·업종/정렬 Dropdown·헤더정렬, TrackingTable 기간필터+KPI 동기화, BacktestForm 제어형+실행 클라이언트계산, Dropdown controlled 보강), **C 본문**(AboutSections 전체 프로즈 확장 — common.md 기반 사실, '배포환경' 섹션 추가 / Report 반응형), **D Mock 보강**(scores 6→26종목·tracking 5→17일·backtest horizon 추가). **최적화**: 점수 7항목 메타 단일화(`lib/scores.ts`), 부호 % 포맷 `signedPercent()` 통합, Dropdown className 추출. 검증 4종(tsc·lint·`next build` 9라우트·build-storybook) + 하드코딩색 0 전부 통과(직접 재검증). 진행기록 `web/frontend/BUILD_PROGRESS.md`. **남은 deferred는 2차에서**: valueTone='up' 하드코딩 버그(음수도 상승색), a11y(aria-sort·sr-only·radiogroup·로딩 status·Dropdown 키보드), 토큰(LogoMark 이모지→lucide·border-white/15), market 필드 계약 확장(시장 Segmento 실작동). → 커밋 `d2e6150`.
+- **2026-06-04 (2차 deferred 수정 — ultracode 워크플로 7에이전트)**: 1차 리뷰 deferred를 파일 소유 분리 5에이전트 병렬로 일괄 수정. ① **valueTone 부호 버그**(BacktestResult 초과수익률 `up` 하드코딩 등 → 값 부호 기준 up/down/default, page·tracking·BacktestResult 3곳; 적중률/승률 등 비수익률 항목은 보존). ② **a11y**: 적중 Check/X `aria-hidden`+sr-only, ScoresTable `aria-sort`+정렬 아이콘 aria-hidden+정렬 재선택 토글 버그 보정, SearchInput aria-label 폴백, StateViews 로딩 `role=status`/`aria-live`/sr-only, Dropdown 키보드 내비(Esc/↑↓/Home·End/Enter·Space/Tab·`aria-activedescendant`). ③ **토큰/아이콘**: StatusDot `role=img`+aria-label(색 단독전달 보완)+Warn 스토리, StatCard `down`(Loss) 스토리 — LogoMark(이미 lucide)·AboutSections(이미 시맨틱 토큰)는 1차에서 처리돼 무변경. ④ **market 계약 확장**: scores.json 26종목 market(KOSPI 20·KOSDAQ 6), schemas.py·api.ts `market:Optional`, common.md 6장+9장 결정로그 → 빈 시장 Segmented 실작동. 검증: tsc·lint·`next build`·build-storybook + mock JSON·schemas 로드 전부 통과(직접 재검증). 미반영(디자인 판단): warn/penalty 색 의미 통일, 백테스트 date picker. 진행기록 BUILD_PROGRESS.md. 다음: HDFS 실연동(타 팀 후) → K8s.

@@ -40,7 +40,7 @@ export default function TrackingPage() {
     {
       label: "평균 수익률",
       value: signedPercent(avgReturn),
-      valueTone: avgReturn >= 0 ? "up" : "down",
+      valueTone: avgReturn > 0 ? "up" : avgReturn < 0 ? "down" : "default",
     },
     { label: "추적 기간", value: period, sub: "필터 기준" },
   ];

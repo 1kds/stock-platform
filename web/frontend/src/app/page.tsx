@@ -38,7 +38,12 @@ export default function DashboardPage() {
         {
           label: "평균 수익률",
           value: signedPercent(tracking.summary.avg_return),
-          valueTone: tracking.summary.avg_return >= 0 ? "up" : "down",
+          valueTone:
+            tracking.summary.avg_return > 0
+              ? "up"
+              : tracking.summary.avg_return < 0
+                ? "down"
+                : "default",
         },
         { label: "추천 종목", value: String(top3.top3.length), sub: "오늘 Top3" },
         {

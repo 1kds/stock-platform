@@ -32,8 +32,12 @@ const SORT_OPTIONS: { value: ScoreSortKey; label: string }[] = [
 
 /** 정렬 화살표 아이콘 — 현재 정렬 컬럼/방향 반영. */
 function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
-  if (!active) return <ChevronsUpDown className="size-3 opacity-40" />;
-  return dir === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />;
+  if (!active) return <ChevronsUpDown aria-hidden className="size-3 opacity-40" />;
+  return dir === "asc" ? (
+    <ArrowUp aria-hidden className="size-3" />
+  ) : (
+    <ArrowDown aria-hidden className="size-3" />
+  );
 }
 
 /** 전체 종목 점수 테이블. 검색·업종·시장·정렬을 organism 내부 상태로 처리. */
@@ -120,9 +124,7 @@ export function ScoresTable({ rows, className }: ScoresTableProps) {
             label="정렬"
             options={SORT_OPTIONS}
             value={sort.key ?? "final_score"}
-            onChange={(v) => {
-              if (v !== sort.key) toggleSort(v as ScoreSortKey);
-            }}
+            onChange={(v) => toggleSort(v as ScoreSortKey)}
           />
           <Segmented options={MARKETS} value={market} onChange={setMarket} />
         </div>
