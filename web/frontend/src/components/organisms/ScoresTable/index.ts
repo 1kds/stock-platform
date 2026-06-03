@@ -1,2 +1,2 @@
 export { ScoresTable } from "./ScoresTable";
-export type { ScoresTableProps } from "./ScoresTable.types";
+export type { ScoresTableProps, ScoreSortKey } from "./ScoresTable.types";

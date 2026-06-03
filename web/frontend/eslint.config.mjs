@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated Storybook build artifact — not source, must not be linted.
+    "storybook-static/**",
   ]),
 ]);
 

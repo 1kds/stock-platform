@@ -14,9 +14,9 @@ export default function ReportPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 sm:gap-5">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">일일 분석 리포트</h1>
+        <h1 className="text-xl font-bold text-foreground sm:text-2xl">일일 분석 리포트</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           매일 08:00 자동 생성 · 추천 시점 대비 적중 결과 포함
         </p>

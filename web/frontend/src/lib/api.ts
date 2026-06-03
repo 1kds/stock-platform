@@ -33,6 +33,7 @@ export interface ScoreRow {
   symbol: string;
   name: string;
   sector: string;
+  market?: string; // KOSPI / KOSDAQ (optional)
   date: string;
   undervaluation_score: number;
   investor_flow_score: number;

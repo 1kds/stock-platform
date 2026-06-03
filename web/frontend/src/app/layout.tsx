@@ -31,9 +31,10 @@ export default function RootLayout({
       <body className="min-h-full bg-background text-foreground">
         <Topbar />
         <div className="flex min-h-[calc(100vh-3.5rem)]">
-          <Sidebar />
+          {/* 데스크톱(lg:)만 고정 사이드바. 모바일은 Topbar 햄버거 → 오프캔버스 드로어. */}
+          <Sidebar className="hidden lg:block" />
           <main className="min-w-0 flex-1">
-            <div className="mx-auto max-w-screen-xl p-6">{children}</div>
+            <div className="mx-auto max-w-screen-xl p-4 sm:p-6">{children}</div>
           </main>
         </div>
       </body>

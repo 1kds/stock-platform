@@ -12,6 +12,8 @@ export function SearchInput({ containerClassName, className, ...props }: SearchI
     >
       <Search className="size-4 shrink-0 text-muted-foreground" />
       <input
+        type={props.type ?? "search"}
+        aria-label={props["aria-label"] ?? props.placeholder ?? "검색"}
         className={cn(
           "w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none",
           className,

@@ -16,12 +16,12 @@ export function ReportCard({
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 rounded-md border bg-card p-4",
-        featured ? "border-primary" : "border-border",
+        "flex w-full flex-col gap-2 rounded-md border bg-card",
+        featured ? "border-primary p-5 sm:p-6" : "border-border p-4",
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-sm font-semibold text-primary">{date}</span>
         <span
           className={cn(
@@ -33,9 +33,9 @@ export function ReportCard({
           {hit ? "적중" : "미적중"}
         </span>
       </div>
-      <p className="font-semibold text-foreground">{title}</p>
+      <p className={cn("font-semibold text-foreground", featured && "text-lg")}>{title}</p>
       <p className="text-xs text-muted-foreground">{stocks}</p>
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
         평균 수익률 <TrendChip value={ret} />
       </div>
     </div>

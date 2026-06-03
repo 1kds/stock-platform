@@ -3,6 +3,8 @@
 FastAPI 자동 문서(/docs)에 그대로 노출되어 프론트와의 계약서 역할.
 """
 
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -38,6 +40,7 @@ class ScoreRow(BaseModel):
     symbol: str
     name: str
     sector: str
+    market: Optional[str] = None  # KOSPI / KOSDAQ (실데이터 없을 때 폴백)
     date: str
     undervaluation_score: int
     investor_flow_score: int

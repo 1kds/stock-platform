@@ -5,7 +5,7 @@
 > 한쪽이 계약(컬럼명/경로/응답 모양)을 바꾸면 **반드시 이 파일을 먼저 고치고** 9장 결정 로그에 한 줄 남길 것.
 > 개인 작업 메모는 각자 파일(`sy.md` 등)에, 공통 계약만 여기에.
 >
-> _마지막 갱신: 2026-05-29_
+> _마지막 갱신: 2026-06-04_
 
 ---
 
@@ -144,7 +144,7 @@ final_score = undervaluation + investor_flow + volume_spike + news_keyword
 | 메서드 | 경로 | 설명 | 데이터 출처 |
 |--------|------|------|------------|
 | GET | `/api/top3` | 오늘의 Top3 | `/result/top3_json/` |
-| GET | `/api/scores` | 전체 종목 점수 | `/result/daily_score/` |
+| GET | `/api/scores` | 전체 종목 점수 (각 행에 `market`: KOSPI/KOSDAQ 포함 — 시장 필터용, Optional) | `/result/daily_score/` |
 | GET | `/api/backtest?start=&end=&hold=` | 백테스팅 | `/result/daily_score/` + `/data/stock/ohlcv/` |
 | GET | `/api/tracking?period=` | 추천 이력·적중률 | `/result/top3/` + ohlcv |
 | GET | `/health` | K8s Liveness용 | (200 OK) |
@@ -215,4 +215,5 @@ final_score = undervaluation + investor_flow + volume_spike + news_keyword
 - **[financial.date]** 보고서 4.4.4엔 `date` 컬럼 있으나 **실제 dart_collector 출력엔 없음.** → 코드에 추가할지 보고서에서 뺄지 결정 필요.
 - **[수집기 개수]** 보고서 본문 "수집기 3종"이나 리포엔 4개(upbit 포함). upbit은 **확장(우선순위 낮음)** 이므로 카운트 제외 — 모순 아님.
 - **[LLM 감성분석]** 아키텍처 그림엔 크게 그려졌으나 **현재 미구현(향후 계획).** 뉴스 점수는 일단 키워드/단순 처리.
+- **[scores.market]** 2026-06-04 — 시장(KOSPI/KOSDAQ) 필터 위해 ScoreRow에 market(Optional) 추가(웹: mock·schemas.py·api.ts). daily_score(4.5)·top3에도 market 컬럼 필요 → Spark 분석 팀 반영 요청.
 - _(이후 결정은 여기에 계속 추가)_

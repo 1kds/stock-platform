@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
 import { Dropdown } from "./Dropdown";
 
 const meta: Meta<typeof Dropdown> = {
@@ -9,4 +10,22 @@ const meta: Meta<typeof Dropdown> = {
 export default meta;
 type Story = StoryObj<typeof Dropdown>;
 
+/** 표시 전용(목업) 트리거 — options 없음. */
 export const Default: Story = {};
+
+const SECTORS = [
+  { value: "전체", label: "업종 전체" },
+  { value: "전기전자", label: "전기전자" },
+  { value: "서비스업", label: "서비스업" },
+  { value: "화학", label: "화학" },
+];
+
+function ControlledDropdown() {
+  const [value, setValue] = useState("전체");
+  return <Dropdown label="업종" options={SECTORS} value={value} onChange={setValue} />;
+}
+
+/** controlled 메뉴 — 클릭 시 선택값이 트리거에 반영. */
+export const Controlled: Story = {
+  render: () => <ControlledDropdown />,
+};

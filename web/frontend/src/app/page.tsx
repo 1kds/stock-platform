@@ -8,6 +8,7 @@ import {
   type TrackingResponse,
   type Top3Item,
 } from "@/lib/api";
+import { signedPercent } from "@/lib/utils";
 import type { StatCardProps } from "@/components/molecules/StatCard";
 import { KpiGrid } from "@/components/organisms/KpiGrid";
 import { Top3Grid } from "@/components/organisms/Top3Grid";
@@ -36,8 +37,13 @@ export default function DashboardPage() {
         { label: "적중률", value: `${tracking.summary.hit_rate}%`, sub: "최근 추천 기준" },
         {
           label: "평균 수익률",
-          value: `${tracking.summary.avg_return > 0 ? "+" : ""}${tracking.summary.avg_return}%`,
-          valueTone: "up",
+          value: signedPercent(tracking.summary.avg_return),
+          valueTone:
+            tracking.summary.avg_return > 0
+              ? "up"
+              : tracking.summary.avg_return < 0
+                ? "down"
+                : "default",
         },
         { label: "추천 종목", value: String(top3.top3.length), sub: "오늘 Top3" },
         {

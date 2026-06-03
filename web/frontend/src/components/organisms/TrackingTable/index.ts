@@ -1,2 +1,2 @@
-export { TrackingTable } from "./TrackingTable";
-export type { TrackingTableProps } from "./TrackingTable.types";
+export { TrackingTable, filterHistoryByPeriod } from "./TrackingTable";
+export type { TrackingTableProps, TrackingPeriod } from "./TrackingTable.types";

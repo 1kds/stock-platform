@@ -8,9 +8,15 @@ import type {
 /** 로딩 스켈레톤 */
 export function LoadingState({ className }: LoadingStateProps) {
   return (
-    <div className={cn("flex flex-col gap-4", className)}>
+    <div
+      role="status"
+      aria-live="polite"
+      aria-busy
+      className={cn("flex flex-col gap-4", className)}
+    >
+      <span className="sr-only">불러오는 중</span>
       <div className="h-6 w-48 animate-pulse rounded bg-muted" />
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
