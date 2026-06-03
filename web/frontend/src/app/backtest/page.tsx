@@ -1,20 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getBacktest, type BacktestResponse } from "@/lib/api";
-import { BacktestForm } from "@/components/organisms/BacktestForm";
+import {
+  BacktestForm,
+  type BacktestFormState,
+} from "@/components/organisms/BacktestForm";
 import { BacktestResult } from "@/components/organisms/BacktestResult";
 import { LoadingState, ErrorState } from "@/components/organisms/StateViews";
+import { SCORE_ITEMS } from "@/lib/scores";
+
+// 폼 라벨 → common.md 점수 항목 영문 key (indicators 응답 계약).
+const INDICATOR_KEY: Record<string, string> = Object.fromEntries(
+  SCORE_ITEMS.map((it) => [it.label, it.key]),
+);
+// 보유 기간 라벨 → 일수.
+const HOLD_DAYS: Record<string, number> = { "T+1": 1, "T+3": 3, "T+5": 5, "T+20": 20 };
+
+const INITIAL_FORM: BacktestFormState = {
+  start: "2026-01-01",
+  end: "2026-05-29",
+  indicators: ["저평가", "수급", "거래량"],
+  hold: "T+3",
+};
+
+/** mock 응답 + 폼 입력 → 클라이언트 계산으로 결과 반영. */
+function applyForm(base: BacktestResponse, form: BacktestFormState): BacktestResponse {
+  const horizons = base.returns_by_horizon;
+  const target = horizons.find((h) => h.horizon === form.hold) ?? horizons.at(-1);
+  return {
+    ...base,
+    period: { start: form.start, end: form.end },
+    hold: HOLD_DAYS[form.hold] ?? base.hold,
+    indicators: form.indicators.map((l) => INDICATOR_KEY[l] ?? l),
+    summary: {
+      ...base.summary,
+      // 선택한 보유기간의 Top3 수익률을 평균 수익률 지표에 반영.
+      avg_return: target ? target.top3_return : base.summary.avg_return,
+    },
+  };
+}
 
 export default function BacktestPage() {
-  const [data, setData] = useState<BacktestResponse | null>(null);
+  const [base, setBase] = useState<BacktestResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState<BacktestFormState>(INITIAL_FORM);
+  const [submitted, setSubmitted] = useState<BacktestFormState>(INITIAL_FORM);
 
   useEffect(() => {
-    getBacktest("2026-01-01", "2026-05-29", 5)
-      .then(setData)
+    getBacktest(INITIAL_FORM.start, INITIAL_FORM.end, HOLD_DAYS[INITIAL_FORM.hold])
+      .then(setBase)
       .catch((e) => setError(String(e)));
   }, []);
+
+  const result = useMemo(
+    () => (base ? applyForm(base, submitted) : null),
+    [base, submitted],
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -24,10 +66,10 @@ export default function BacktestPage() {
           과거 데이터로 추천 전략의 수익률과 승률을 검증합니다
         </p>
       </div>
-      <BacktestForm />
+      <BacktestForm value={form} onChange={setForm} onRun={setSubmitted} />
       {error && <ErrorState message={error} />}
-      {!data && !error && <LoadingState />}
-      {data && <BacktestResult data={data} />}
+      {!result && !error && <LoadingState />}
+      {result && <BacktestResult data={result} />}
     </div>
   );
 }

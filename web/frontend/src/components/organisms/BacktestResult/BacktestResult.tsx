@@ -9,11 +9,9 @@ import {
   Legend,
   CartesianGrid,
 } from "recharts";
-import { cn } from "@/lib/utils";
+import { cn, signedPercent } from "@/lib/utils";
 import { StatCard } from "@/components/molecules/StatCard";
 import type { BacktestResultProps } from "./BacktestResult.types";
-
-const fmt = (n: number) => `${n > 0 ? "+" : ""}${n}%`;
 
 /** 백테스팅 결과 — KPI + 기간별 수익률(Top3 vs 시장) 차트. */
 export function BacktestResult({ data, className }: BacktestResultProps) {
@@ -22,9 +20,9 @@ export function BacktestResult({ data, className }: BacktestResultProps) {
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="평균 수익률" value={fmt(data.summary.avg_return)} valueTone="up" />
+        <StatCard label="평균 수익률" value={signedPercent(data.summary.avg_return)} valueTone={data.summary.avg_return >= 0 ? "up" : "down"} />
         <StatCard label="승률" value={`${data.summary.win_rate}%`} />
-        <StatCard label="최대 낙폭" value={fmt(data.summary.max_drawdown)} valueTone="down" />
+        <StatCard label="최대 낙폭" value={signedPercent(data.summary.max_drawdown)} valueTone="down" />
         <StatCard label="초과수익률 (vs 시장)" value={`${excess > 0 ? "+" : ""}${excess.toFixed(1)}%p`} valueTone="up" />
       </div>
       <div className="rounded-md border border-border bg-card p-5">

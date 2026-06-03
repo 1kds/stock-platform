@@ -1,19 +1,35 @@
 {
   "summary": {
-    "hit_rate": 66.7,
-    "avg_return": 3.4,
+    "hit_rate": 70.6,
+    "avg_return": 2.0,
     "updated_at": "2026-05-29 08:00"
   },
   "return_chart": [
+    {"date": "2026-04-21", "return": -0.8},
+    {"date": "2026-04-22", "return": 0.3},
+    {"date": "2026-04-23", "return": 1.1},
+    {"date": "2026-04-24", "return": 0.6},
+    {"date": "2026-04-25", "return": -0.4},
+    {"date": "2026-04-28", "return": 1.9},
+    {"date": "2026-04-29", "return": 2.3},
     {"date": "2026-04-30", "return": 0.5},
-    {"date": "2026-05-04", "return": 1.2},
+    {"date": "2026-05-02", "return": 1.4},
     {"date": "2026-05-07", "return": 0.8},
-    {"date": "2026-05-11", "return": 2.1},
-    {"date": "2026-05-14", "return": 1.7},
-    {"date": "2026-05-18", "return": 3.0},
-    {"date": "2026-05-21", "return": 2.4},
+    {"date": "2026-05-08", "return": 2.6},
+    {"date": "2026-05-09", "return": 3.1},
+    {"date": "2026-05-12", "return": 1.7},
+    {"date": "2026-05-13", "return": -1.0},
+    {"date": "2026-05-14", "return": 0.9},
+    {"date": "2026-05-15", "return": 2.2},
+    {"date": "2026-05-16", "return": 3.0},
+    {"date": "2026-05-19", "return": 2.4},
+    {"date": "2026-05-20", "return": -0.6},
+    {"date": "2026-05-21", "return": 1.8},
+    {"date": "2026-05-22", "return": 0.4},
+    {"date": "2026-05-23", "return": 2.7},
     {"date": "2026-05-26", "return": 4.2},
-    {"date": "2026-05-28", "return": 3.4}
+    {"date": "2026-05-27", "return": 3.5},
+    {"date": "2026-05-28", "return": 2.8}
   ],
   "history": [
     {"date": "2026-05-28", "top3": [
@@ -31,15 +47,75 @@
         {"rank": 2, "symbol": "051910", "name": "LG화학"},
         {"rank": 3, "symbol": "000660", "name": "SK하이닉스"}],
       "avg_return_t3": -0.7, "avg_return_t5": 0.4, "hit": false},
-    {"date": "2026-05-25", "top3": [
-        {"rank": 1, "symbol": "005930", "name": "삼성전자"},
-        {"rank": 2, "symbol": "035720", "name": "카카오"},
+    {"date": "2026-05-23", "top3": [
+        {"rank": 1, "symbol": "207940", "name": "삼성바이오로직스"},
+        {"rank": 2, "symbol": "068270", "name": "셀트리온"},
         {"rank": 3, "symbol": "035420", "name": "NAVER"}],
-      "avg_return_t3": 3.2, "avg_return_t5": 4.6, "hit": true},
+      "avg_return_t3": 2.9, "avg_return_t5": 4.1, "hit": true},
     {"date": "2026-05-22", "top3": [
         {"rank": 1, "symbol": "000660", "name": "SK하이닉스"},
         {"rank": 2, "symbol": "005380", "name": "현대차"},
         {"rank": 3, "symbol": "005930", "name": "삼성전자"}],
-      "avg_return_t3": -1.2, "avg_return_t5": -0.3, "hit": false}
+      "avg_return_t3": -1.2, "avg_return_t5": -0.3, "hit": false},
+    {"date": "2026-05-21", "top3": [
+        {"rank": 1, "symbol": "247540", "name": "에코프로비엠"},
+        {"rank": 2, "symbol": "373220", "name": "LG에너지솔루션"},
+        {"rank": 3, "symbol": "006400", "name": "삼성SDI"}],
+      "avg_return_t3": 3.8, "avg_return_t5": 5.2, "hit": true},
+    {"date": "2026-05-20", "top3": [
+        {"rank": 1, "symbol": "005930", "name": "삼성전자"},
+        {"rank": 2, "symbol": "000270", "name": "기아"},
+        {"rank": 3, "symbol": "105560", "name": "KB금융"}],
+      "avg_return_t3": 0.6, "avg_return_t5": 1.9, "hit": true},
+    {"date": "2026-05-19", "top3": [
+        {"rank": 1, "symbol": "035420", "name": "NAVER"},
+        {"rank": 2, "symbol": "035720", "name": "카카오"},
+        {"rank": 3, "symbol": "036570", "name": "엔씨소프트"}],
+      "avg_return_t3": -2.1, "avg_return_t5": -1.4, "hit": false},
+    {"date": "2026-05-16", "top3": [
+        {"rank": 1, "symbol": "000660", "name": "SK하이닉스"},
+        {"rank": 2, "symbol": "005930", "name": "삼성전자"},
+        {"rank": 3, "symbol": "207940", "name": "삼성바이오로직스"}],
+      "avg_return_t3": 2.7, "avg_return_t5": 3.9, "hit": true},
+    {"date": "2026-05-15", "top3": [
+        {"rank": 1, "symbol": "005380", "name": "현대차"},
+        {"rank": 2, "symbol": "000270", "name": "기아"},
+        {"rank": 3, "symbol": "012330", "name": "현대모비스"}],
+      "avg_return_t3": 1.3, "avg_return_t5": 2.2, "hit": true},
+    {"date": "2026-05-14", "top3": [
+        {"rank": 1, "symbol": "247540", "name": "에코프로비엠"},
+        {"rank": 2, "symbol": "086520", "name": "에코프로"},
+        {"rank": 3, "symbol": "066970", "name": "엘앤에프"}],
+      "avg_return_t3": -3.4, "avg_return_t5": -2.0, "hit": false},
+    {"date": "2026-05-13", "top3": [
+        {"rank": 1, "symbol": "005930", "name": "삼성전자"},
+        {"rank": 2, "symbol": "035420", "name": "NAVER"},
+        {"rank": 3, "symbol": "105560", "name": "KB금융"}],
+      "avg_return_t3": 1.8, "avg_return_t5": 2.6, "hit": true},
+    {"date": "2026-05-12", "top3": [
+        {"rank": 1, "symbol": "068270", "name": "셀트리온"},
+        {"rank": 2, "symbol": "207940", "name": "삼성바이오로직스"},
+        {"rank": 3, "symbol": "091990", "name": "셀트리온헬스케어"}],
+      "avg_return_t3": 2.4, "avg_return_t5": 3.7, "hit": true},
+    {"date": "2026-05-09", "top3": [
+        {"rank": 1, "symbol": "000660", "name": "SK하이닉스"},
+        {"rank": 2, "symbol": "005930", "name": "삼성전자"},
+        {"rank": 3, "symbol": "000270", "name": "기아"}],
+      "avg_return_t3": 3.1, "avg_return_t5": 4.5, "hit": true},
+    {"date": "2026-05-08", "top3": [
+        {"rank": 1, "symbol": "035420", "name": "NAVER"},
+        {"rank": 2, "symbol": "035720", "name": "카카오"},
+        {"rank": 3, "symbol": "251270", "name": "넷마블"}],
+      "avg_return_t3": -0.9, "avg_return_t5": 0.7, "hit": false},
+    {"date": "2026-05-07", "top3": [
+        {"rank": 1, "symbol": "005930", "name": "삼성전자"},
+        {"rank": 2, "symbol": "051910", "name": "LG화학"},
+        {"rank": 3, "symbol": "096770", "name": "SK이노베이션"}],
+      "avg_return_t3": 0.8, "avg_return_t5": 1.5, "hit": true},
+    {"date": "2026-04-30", "top3": [
+        {"rank": 1, "symbol": "005930", "name": "삼성전자"},
+        {"rank": 2, "symbol": "000660", "name": "SK하이닉스"},
+        {"rank": 3, "symbol": "035420", "name": "NAVER"}],
+      "avg_return_t3": 0.3, "avg_return_t5": 1.1, "hit": true}
   ]
 }

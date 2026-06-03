@@ -13,10 +13,10 @@ export function ReportFeed({ rows, className }: ReportFeedProps) {
   });
   const [first, ...rest] = rows;
   return (
-    <div className={cn("flex flex-col gap-4", className)}>
+    <div className={cn("flex w-full flex-col gap-4 sm:gap-5", className)}>
       {first && <ReportCard featured {...toCard(first)} />}
       {rest.length > 0 && (
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {rest.map((r) => (
             <ReportCard key={r.date} {...toCard(r)} />
           ))}

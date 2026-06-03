@@ -2,16 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { getTracking, type TrackingResponse } from "@/lib/api";
+import { signedPercent } from "@/lib/utils";
 import type { StatCardProps } from "@/components/molecules/StatCard";
 import { Segmented } from "@/components/molecules/Segmented";
 import { KpiGrid } from "@/components/organisms/KpiGrid";
-import { TrackingTable } from "@/components/organisms/TrackingTable";
+import {
+  TrackingTable,
+  filterHistoryByPeriod,
+  type TrackingPeriod,
+} from "@/components/organisms/TrackingTable";
 import { LoadingState, ErrorState } from "@/components/organisms/StateViews";
 
 export default function TrackingPage() {
   const [data, setData] = useState<TrackingResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState("최근 1개월");
+  const [period, setPeriod] = useState<TrackingPeriod>("최근 1개월");
 
   useEffect(() => {
     getTracking().then(setData).catch((e) => setError(String(e)));
@@ -20,17 +25,22 @@ export default function TrackingPage() {
   if (error) return <ErrorState message={error} />;
   if (!data) return <LoadingState />;
 
-  const hitDays = data.history.filter((h) => h.hit).length;
+  const visible = filterHistoryByPeriod(data.history, period);
+  const hitDays = visible.filter((h) => h.hit).length;
+  const hitRate = visible.length ? Math.round((hitDays / visible.length) * 1000) / 10 : 0;
+  const avgReturn = visible.length
+    ? Math.round((visible.reduce((s, h) => s + h.avg_return_t5, 0) / visible.length) * 10) / 10
+    : 0;
   const kpi: StatCardProps[] = [
     {
       label: "적중률",
-      value: `${data.summary.hit_rate}%`,
-      sub: `${hitDays} / ${data.history.length} 적중일`,
+      value: `${hitRate}%`,
+      sub: `${hitDays} / ${visible.length} 적중일`,
     },
     {
       label: "평균 수익률",
-      value: `${data.summary.avg_return > 0 ? "+" : ""}${data.summary.avg_return}%`,
-      valueTone: "up",
+      value: signedPercent(avgReturn),
+      valueTone: avgReturn >= 0 ? "up" : "down",
     },
     { label: "추적 기간", value: period, sub: "필터 기준" },
   ];
@@ -47,11 +57,11 @@ export default function TrackingPage() {
         <Segmented
           options={["최근 1주", "최근 1개월", "전체"]}
           value={period}
-          onChange={setPeriod}
+          onChange={(v) => setPeriod(v as TrackingPeriod)}
         />
       </div>
       <KpiGrid items={kpi} />
-      <TrackingTable rows={data.history} />
+      <TrackingTable rows={data.history} period={period} />
     </div>
   );
 }

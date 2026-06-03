@@ -1,3 +1,4 @@
+import { TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LogoMarkProps } from "./LogoMark.types";
 
@@ -7,11 +8,11 @@ export function LogoMark({ className }: LogoMarkProps) {
     <span
       aria-hidden
       className={cn(
-        "inline-flex size-7 items-center justify-center rounded-md bg-primary text-sm",
+        "inline-flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground",
         className,
       )}
     >
-      📈
+      <TrendingUp className="size-4" />
     </span>
   );
 }
