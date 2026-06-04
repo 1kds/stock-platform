@@ -1,36 +1,38 @@
 """
-Ollama 기반 뉴스 제목 감성 분석기 (팀 공통 스펙 v2).
+Google Gemini API 기반 뉴스 제목 감성 분석기 (팀 공통 스펙 v2).
 
 news 파티션(part-0.parquet, dart-disclosures.parquet)을 읽어
 sentiment_keywords, sentiment_score 컬럼을 추가하고 덮어쓴다.
 
 사전 준비:
-  ollama pull llama3.2          # 기본 모델 (~2 GB)
-  # 한국어 성능 개선 시:
-  # ollama pull qwen2.5:7b     (~4.7 GB, 한국어 우수)
+  pip install google-generativeai
+  Google AI Studio (ai.google.dev) 에서 API 키 발급 후 .env에 추가:
+  GEMINI_API_KEY=여기에_API_키_입력
 
 환경변수:
-  HDFS_BASE     저장 경로 루트 (기본: /tmp/stock-data)
-  OLLAMA_URL    Ollama API 주소 (기본: http://localhost:11434)
-  OLLAMA_MODEL  사용 모델명    (기본: llama3.2)
+  HDFS_BASE       저장 경로 루트 (기본: /tmp/stock-data)
+  GEMINI_API_KEY  Google AI Studio API 키 (필수)
+  GEMINI_MODEL    사용 모델 (기본: gemini-1.5-flash)
 """
 
 import os
 import json
+import time
 import logging
 import argparse
 from datetime import date
 
 import pandas as pd
-import requests
+import google.generativeai as genai
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
-HDFS_BASE    = os.environ.get("HDFS_BASE",    "/tmp/stock-data")
-OLLAMA_URL   = os.environ.get("OLLAMA_URL",   "http://localhost:11434")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2")
-BATCH_SIZE   = 10  # 한 번에 LLM에 보낼 뉴스 수
+HDFS_BASE      = os.environ.get("HDFS_BASE",      "/tmp/stock-data")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL   = os.environ.get("GEMINI_MODEL",   "gemini-1.5-flash")
+BATCH_SIZE     = 10   # 한 번에 LLM에 보낼 뉴스 수
+RATE_LIMIT_SLEEP = 4  # 분당 15회 한도 유지 (4초 = 15회/분)
 
 # ── 프롬프트 ─────────────────────────────────────────────────
 _PROMPT = """\
@@ -45,6 +47,7 @@ _PROMPT = """\
 규칙:
 - sentiment_score: -1.0(매우 부정) ~ 1.0(매우 긍정), 관련 키워드 없으면 0.0
 - keywords: 해당 제목에서 감지된 키워드 목록 (없으면 빈 배열)
+- 목록에 없는 단어라도 주식 투자에 영향을 주는 표현이면 판단할 것
 - id 번호는 입력 순서 그대로 유지
 
 뉴스 목록:
@@ -54,19 +57,16 @@ JSON 배열만 반환하고 다른 텍스트는 절대 출력하지 마세요:
 [{{"id":0,"keywords":[],"sentiment_score":0.0}}, ...]"""
 
 
-# ── Ollama 호출 ───────────────────────────────────────────────
-def _call_ollama(prompt: str, timeout: int = 60) -> str:
-    resp = requests.post(
-        f"{OLLAMA_URL}/api/generate",
-        json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False},
-        timeout=timeout,
-    )
-    resp.raise_for_status()
-    return resp.json().get("response", "").strip()
+# ── Gemini 초기화 ─────────────────────────────────────────────
+def _init_gemini() -> genai.GenerativeModel:
+    if not GEMINI_API_KEY:
+        raise EnvironmentError("환경변수 GEMINI_API_KEY가 필요합니다. (ai.google.dev에서 발급)")
+    genai.configure(api_key=GEMINI_API_KEY)
+    return genai.GenerativeModel(GEMINI_MODEL)
 
 
+# ── JSON 파싱 ─────────────────────────────────────────────────
 def _parse_json_array(raw: str) -> list[dict]:
-    """응답 문자열에서 JSON 배열만 추출."""
     start = raw.find("[")
     end   = raw.rfind("]") + 1
     if start == -1 or end == 0:
@@ -74,36 +74,37 @@ def _parse_json_array(raw: str) -> list[dict]:
     return json.loads(raw[start:end])
 
 
-def _batch_analyze(titles: list[str]) -> list[dict]:
+# ── 배치 분석 ─────────────────────────────────────────────────
+def _batch_analyze(model: genai.GenerativeModel, titles: list[str]) -> list[dict]:
     """titles 배치 → [{id, keywords, sentiment_score}, ...] 반환."""
     numbered = "\n".join(f"{i}. {t}" for i, t in enumerate(titles))
     prompt   = _PROMPT.format(titles=numbered)
     try:
-        raw     = _call_ollama(prompt)
-        results = _parse_json_array(raw)
+        response = model.generate_content(prompt)
+        results  = _parse_json_array(response.text)
         results.sort(key=lambda x: x.get("id", 0))
         for r in results:
             r["sentiment_score"] = max(-1.0, min(1.0, float(r.get("sentiment_score", 0.0))))
         return results
     except Exception as e:
-        log.warning("배치 분석 실패 (%d건), 개별 처리로 전환: %s", len(titles), e)
+        log.warning("배치 분석 실패, 개별 처리로 전환: %s", e)
         return []
 
 
-def _single_analyze(title: str) -> tuple[list[str], float]:
+def _single_analyze(model: genai.GenerativeModel, title: str) -> tuple[list[str], float]:
     """단건 fallback."""
     prompt = _PROMPT.format(titles=f"0. {title}")
     try:
-        raw  = _call_ollama(prompt, timeout=30)
-        data = _parse_json_array(raw)[0]
-        score = max(-1.0, min(1.0, float(data.get("sentiment_score", 0.0))))
+        response = model.generate_content(prompt)
+        data     = _parse_json_array(response.text)[0]
+        score    = max(-1.0, min(1.0, float(data.get("sentiment_score", 0.0))))
         return data.get("keywords", []), score
     except Exception:
         return [], 0.0
 
 
-# ── 분석 실행 ─────────────────────────────────────────────────
-def _analyze(df: pd.DataFrame) -> pd.DataFrame:
+# ── 전체 분석 ─────────────────────────────────────────────────
+def _analyze(df: pd.DataFrame, model: genai.GenerativeModel) -> pd.DataFrame:
     """title 컬럼 분석 → sentiment_keywords, sentiment_score 컬럼 추가."""
     titles  = df["title"].astype(str).tolist()
     kws_all = [""] * len(titles)
@@ -111,7 +112,7 @@ def _analyze(df: pd.DataFrame) -> pd.DataFrame:
 
     for batch_start in range(0, len(titles), BATCH_SIZE):
         batch   = titles[batch_start: batch_start + BATCH_SIZE]
-        results = _batch_analyze(batch)
+        results = _batch_analyze(model, batch)
 
         if len(results) == len(batch):
             for i, r in enumerate(results):
@@ -119,15 +120,16 @@ def _analyze(df: pd.DataFrame) -> pd.DataFrame:
                 kws_all[idx] = ", ".join(r.get("keywords", []))
                 scr_all[idx] = r["sentiment_score"]
         else:
-            # 배치 실패 → 개별 처리
             for i, title in enumerate(batch):
-                kws, score = _single_analyze(title)
+                kws, score = _single_analyze(model, title)
                 idx = batch_start + i
                 kws_all[idx] = ", ".join(kws)
                 scr_all[idx] = score
+                time.sleep(RATE_LIMIT_SLEEP)
 
         done = min(batch_start + BATCH_SIZE, len(titles))
         log.info("감성 분석 진행: %d / %d", done, len(titles))
+        time.sleep(RATE_LIMIT_SLEEP)  # 분당 15회 한도 유지
 
     df = df.copy()
     df["sentiment_keywords"] = kws_all
@@ -145,6 +147,7 @@ def _hdfs_dir(base: str, d: date) -> str:
 
 # ── 메인 ──────────────────────────────────────────────────────
 def run(target_date: date, hdfs_base: str) -> None:
+    model    = _init_gemini()
     dir_path = _hdfs_dir(hdfs_base, target_date)
     targets  = ["part-0.parquet", "dart-disclosures.parquet"]
 
@@ -154,9 +157,9 @@ def run(target_date: date, hdfs_base: str) -> None:
             log.debug("파일 없음 (건너뜀): %s", path)
             continue
 
-        log.info("[%s] 감성 분석 시작 (모델: %s)...", fname, OLLAMA_MODEL)
+        log.info("[%s] 감성 분석 시작 (모델: %s)...", fname, GEMINI_MODEL)
         df  = pd.read_parquet(path)
-        df  = _analyze(df)
+        df  = _analyze(df, model)
         df.to_parquet(path, index=False)
         log.info(
             "[%s] 완료 — %d건, 평균 점수: %.3f (긍정: %d건 / 부정: %d건)",
@@ -168,14 +171,14 @@ def run(target_date: date, hdfs_base: str) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Ollama 뉴스 감성 분석기")
+    parser = argparse.ArgumentParser(description="Gemini 뉴스 감성 분석기")
     parser.add_argument("--date",  default=str(date.today()), help="분석 날짜 YYYY-MM-DD")
     parser.add_argument("--base",  default=HDFS_BASE,         help="HDFS 기본 경로")
-    parser.add_argument("--model", default=OLLAMA_MODEL,      help="Ollama 모델명")
+    parser.add_argument("--model", default=GEMINI_MODEL,      help="Gemini 모델명")
     args = parser.parse_args()
 
-    global OLLAMA_MODEL
-    OLLAMA_MODEL = args.model
+    global GEMINI_MODEL
+    GEMINI_MODEL = args.model
 
     run(date.fromisoformat(args.date), args.base)
 
