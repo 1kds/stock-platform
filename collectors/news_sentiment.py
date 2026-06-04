@@ -5,14 +5,14 @@ news 파티션(part-0.parquet, dart-disclosures.parquet)을 읽어
 sentiment_keywords, sentiment_score 컬럼을 추가하고 덮어쓴다.
 
 사전 준비:
-  pip install google-generativeai
+  pip install google-genai
   Google AI Studio (ai.google.dev) 에서 API 키 발급 후 .env에 추가:
   GEMINI_API_KEY=여기에_API_키_입력
 
 환경변수:
   HDFS_BASE       저장 경로 루트 (기본: /tmp/stock-data)
   GEMINI_API_KEY  Google AI Studio API 키 (필수)
-  GEMINI_MODEL    사용 모델 (기본: gemini-1.5-flash)
+  GEMINI_MODEL    사용 모델 (기본: gemini-2.5-flash)
 """
 
 import os
@@ -23,14 +23,14 @@ import argparse
 from datetime import date
 
 import pandas as pd
-import google.generativeai as genai
+from google import genai
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
 HDFS_BASE      = os.environ.get("HDFS_BASE",      "/tmp/stock-data")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL   = os.environ.get("GEMINI_MODEL",   "gemini-1.5-flash")
+GEMINI_MODEL   = os.environ.get("GEMINI_MODEL",   "gemini-2.5-flash")
 BATCH_SIZE     = 10   # 한 번에 LLM에 보낼 뉴스 수
 RATE_LIMIT_SLEEP = 4  # 분당 15회 한도 유지 (4초 = 15회/분)
 
@@ -58,11 +58,10 @@ JSON 배열만 반환하고 다른 텍스트는 절대 출력하지 마세요:
 
 
 # ── Gemini 초기화 ─────────────────────────────────────────────
-def _init_gemini() -> genai.GenerativeModel:
+def _init_gemini() -> genai.Client:
     if not GEMINI_API_KEY:
         raise EnvironmentError("환경변수 GEMINI_API_KEY가 필요합니다. (ai.google.dev에서 발급)")
-    genai.configure(api_key=GEMINI_API_KEY)
-    return genai.GenerativeModel(GEMINI_MODEL)
+    return genai.Client(api_key=GEMINI_API_KEY)
 
 
 # ── JSON 파싱 ─────────────────────────────────────────────────
@@ -75,12 +74,12 @@ def _parse_json_array(raw: str) -> list[dict]:
 
 
 # ── 배치 분석 ─────────────────────────────────────────────────
-def _batch_analyze(model: genai.GenerativeModel, titles: list[str]) -> list[dict]:
+def _batch_analyze(client: genai.Client, titles: list[str]) -> list[dict]:
     """titles 배치 → [{id, keywords, sentiment_score}, ...] 반환."""
     numbered = "\n".join(f"{i}. {t}" for i, t in enumerate(titles))
     prompt   = _PROMPT.format(titles=numbered)
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
         results  = _parse_json_array(response.text)
         results.sort(key=lambda x: x.get("id", 0))
         for r in results:
@@ -91,11 +90,11 @@ def _batch_analyze(model: genai.GenerativeModel, titles: list[str]) -> list[dict
         return []
 
 
-def _single_analyze(model: genai.GenerativeModel, title: str) -> tuple[list[str], float]:
+def _single_analyze(client: genai.Client, title: str) -> tuple[list[str], float]:
     """단건 fallback."""
     prompt = _PROMPT.format(titles=f"0. {title}")
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
         data     = _parse_json_array(response.text)[0]
         score    = max(-1.0, min(1.0, float(data.get("sentiment_score", 0.0))))
         return data.get("keywords", []), score
@@ -104,7 +103,7 @@ def _single_analyze(model: genai.GenerativeModel, title: str) -> tuple[list[str]
 
 
 # ── 전체 분석 ─────────────────────────────────────────────────
-def _analyze(df: pd.DataFrame, model: genai.GenerativeModel) -> pd.DataFrame:
+def _analyze(df: pd.DataFrame, client: genai.Client) -> pd.DataFrame:
     """title 컬럼 분석 → sentiment_keywords, sentiment_score 컬럼 추가."""
     titles  = df["title"].astype(str).tolist()
     kws_all = [""] * len(titles)
@@ -112,7 +111,7 @@ def _analyze(df: pd.DataFrame, model: genai.GenerativeModel) -> pd.DataFrame:
 
     for batch_start in range(0, len(titles), BATCH_SIZE):
         batch   = titles[batch_start: batch_start + BATCH_SIZE]
-        results = _batch_analyze(model, batch)
+        results = _batch_analyze(client, batch)
 
         if len(results) == len(batch):
             for i, r in enumerate(results):
@@ -121,7 +120,7 @@ def _analyze(df: pd.DataFrame, model: genai.GenerativeModel) -> pd.DataFrame:
                 scr_all[idx] = r["sentiment_score"]
         else:
             for i, title in enumerate(batch):
-                kws, score = _single_analyze(model, title)
+                kws, score = _single_analyze(client, title)
                 idx = batch_start + i
                 kws_all[idx] = ", ".join(kws)
                 scr_all[idx] = score
@@ -147,7 +146,7 @@ def _hdfs_dir(base: str, d: date) -> str:
 
 # ── 메인 ──────────────────────────────────────────────────────
 def run(target_date: date, hdfs_base: str) -> None:
-    model    = _init_gemini()
+    client   = _init_gemini()
     dir_path = _hdfs_dir(hdfs_base, target_date)
     targets  = ["part-0.parquet", "dart-disclosures.parquet"]
 
@@ -159,7 +158,7 @@ def run(target_date: date, hdfs_base: str) -> None:
 
         log.info("[%s] 감성 분석 시작 (모델: %s)...", fname, GEMINI_MODEL)
         df  = pd.read_parquet(path)
-        df  = _analyze(df, model)
+        df  = _analyze(df, client)
         df.to_parquet(path, index=False)
         log.info(
             "[%s] 완료 — %d건, 평균 점수: %.3f (긍정: %d건 / 부정: %d건)",
@@ -171,13 +170,13 @@ def run(target_date: date, hdfs_base: str) -> None:
 
 
 def main() -> None:
+    global GEMINI_MODEL
     parser = argparse.ArgumentParser(description="Gemini 뉴스 감성 분석기")
     parser.add_argument("--date",  default=str(date.today()), help="분석 날짜 YYYY-MM-DD")
     parser.add_argument("--base",  default=HDFS_BASE,         help="HDFS 기본 경로")
     parser.add_argument("--model", default=GEMINI_MODEL,      help="Gemini 모델명")
     args = parser.parse_args()
 
-    global GEMINI_MODEL
     GEMINI_MODEL = args.model
 
     run(date.fromisoformat(args.date), args.base)
