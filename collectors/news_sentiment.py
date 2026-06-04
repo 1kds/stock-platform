@@ -106,7 +106,6 @@ def _single_analyze(client: genai.Client, title: str) -> tuple[list[str], float]
 def _analyze(df: pd.DataFrame, client: genai.Client) -> pd.DataFrame:
     """title 컬럼 분석 → sentiment_keywords, sentiment_score 컬럼 추가."""
     titles  = df["title"].astype(str).tolist()
-    kws_all = [""] * len(titles)
     scr_all = [0.0] * len(titles)
 
     for batch_start in range(0, len(titles), BATCH_SIZE):
@@ -115,15 +114,11 @@ def _analyze(df: pd.DataFrame, client: genai.Client) -> pd.DataFrame:
 
         if len(results) == len(batch):
             for i, r in enumerate(results):
-                idx = batch_start + i
-                kws_all[idx] = ", ".join(r.get("keywords", []))
-                scr_all[idx] = r["sentiment_score"]
+                scr_all[batch_start + i] = r["sentiment_score"]
         else:
             for i, title in enumerate(batch):
-                kws, score = _single_analyze(client, title)
-                idx = batch_start + i
-                kws_all[idx] = ", ".join(kws)
-                scr_all[idx] = score
+                _, score = _single_analyze(client, title)
+                scr_all[batch_start + i] = score
                 time.sleep(RATE_LIMIT_SLEEP)
 
         done = min(batch_start + BATCH_SIZE, len(titles))
@@ -131,8 +126,7 @@ def _analyze(df: pd.DataFrame, client: genai.Client) -> pd.DataFrame:
         time.sleep(RATE_LIMIT_SLEEP)  # 분당 15회 한도 유지
 
     df = df.copy()
-    df["sentiment_keywords"] = kws_all
-    df["sentiment_score"]    = scr_all
+    df["sentiment_score"] = scr_all
     return df
 
 
