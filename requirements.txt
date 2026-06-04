@@ -4,3 +4,8 @@ pyarrow>=14.0.0
 requests>=2.31.0
 beautifulsoup4>=4.12.0
 lxml>=5.0.0
+
+# news_sentiment.py 실행 전 Ollama 설치 및 모델 다운로드 필요
+# https://ollama.com 에서 설치 후:
+#   ollama pull llama3.2          (기본, ~2 GB)
+#   ollama pull qwen2.5:7b        (한국어 성능 개선, ~4.7 GB)
