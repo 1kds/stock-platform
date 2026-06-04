@@ -92,7 +92,7 @@ foreign_holding_ratio         # 외국인 보유비율(%)
 ### 4.3 `news` (news_collector.py + dart_collector 공시 통합)
 ```
 symbol, date, published_at, source, title,
-sentiment_score   # news_sentiment.py 실행 후 추가 (-1.0 ~ +1.0)
+sentiment_score   # news_sentiment.py 실행 후 추가 (-10.0 ~ +15.0)
 ```
 - 네이버 뉴스: `source` = 언론사명. 공시: `source` = `"dart"`, 파일명 `dart-disclosures.parquet`.
 - `published_at` 포맷: `YYYY-MM-DD HH:MM` (정규화됨).

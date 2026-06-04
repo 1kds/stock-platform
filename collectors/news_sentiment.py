@@ -64,6 +64,14 @@ def _init_gemini() -> genai.Client:
     return genai.Client(api_key=GEMINI_API_KEY)
 
 
+# ── 점수 변환: LLM 출력(-1~+1) → 최종 점수(-10~+15) ──────────
+def _scale_score(raw: float) -> float:
+    """양수 구간 ×15, 음수 구간 ×10 (비대칭 선형 변환)."""
+    if raw >= 0:
+        return round(min(raw * 15, 15.0), 2)
+    return round(max(raw * 10, -10.0), 2)
+
+
 # ── JSON 파싱 ─────────────────────────────────────────────────
 def _parse_json_array(raw: str) -> list[dict]:
     start = raw.find("[")
@@ -83,7 +91,7 @@ def _batch_analyze(client: genai.Client, titles: list[str]) -> list[dict]:
         results  = _parse_json_array(response.text)
         results.sort(key=lambda x: x.get("id", 0))
         for r in results:
-            r["sentiment_score"] = max(-1.0, min(1.0, float(r.get("sentiment_score", 0.0))))
+            r["sentiment_score"] = _scale_score(float(r.get("sentiment_score", 0.0)))
         return results
     except Exception as e:
         log.warning("배치 분석 실패, 개별 처리로 전환: %s", e)
@@ -96,7 +104,7 @@ def _single_analyze(client: genai.Client, title: str) -> tuple[list[str], float]
     try:
         response = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
         data     = _parse_json_array(response.text)[0]
-        score    = max(-1.0, min(1.0, float(data.get("sentiment_score", 0.0))))
+        score    = _scale_score(float(data.get("sentiment_score", 0.0)))
         return data.get("keywords", []), score
     except Exception:
         return [], 0.0
