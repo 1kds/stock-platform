@@ -34,6 +34,12 @@
 ### 점수 등급색
 - `--score-high`(green) / `--score-mid`(light) / `--score-low`(sage) → 점수 바·뱃지.
 
+### 상태·감점색 (등락색과 분리)
+빨강=상승(up)이므로, "나쁨" 신호에 up을 빌려 쓰지 않는다. 의미별 전용 토큰.
+- `--color-warn` = 앰버(경고) → `bg-warn`. `StatusDot tone="warn"`(상태 점).
+- `--color-danger` = 전용 레드(감점·위험, up과 별개 값) → `bg-danger` `text-danger`. `ScoreBar penalty`(리스크 감점 막대).
+- 경고=주황 / 상승=빨강이라 시각적으로도 구분된다.
+
 ## 3. 쓰지 말 것 (색)
 - 브랜드 그린을 "상승" 신호로 ❌ (등락은 빨강/파랑 전용)
 - petrol을 넓은 본문 배경으로 ❌ (사이드바/헤더 같은 좁은 면만 — 가독성)
