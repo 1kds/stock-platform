@@ -207,6 +207,12 @@ npm run dev
 - [x] 🐛 valueTone 부호 버그 수정 (음수 수익률이 상승색으로 표시되던 것 교정)
 - 검증: tsc·lint·`next build`(7라우트)·build-storybook·하드코딩색 0 + 백엔드 로드 전부 통과(직접 재검증)
 
+**✅ 완료 — 메인 대시보드 보강 (2026-06-06)**
+- [x] 시장 요약 띠 `MarketOverview` (분석 종목수·KOSPI/KOSDAQ·평균 점수·등급 분포 바)
+- [x] `Watchlist`(4~10위 + "전체 보기"→/scores) · `SectorDistribution`(업종별 막대)
+- [x] Top3 카드 강점 태그 1→상위 3개 + **0~100 강도 숫자**(점수/최대×100), Top3를 최상단 배치
+- [x] `lib/marketSummary` 집계 + `scoreTier()`·`topStrengths()` 추출(ScoreBadge 임계값 재사용)
+
 **📍 남은 폴리시 (선택 / 디자인 판단 필요)**
 - [ ] (선택) 다크모드 — globals.css·전 컴포넌트 광범위 영향이라 보류
 - [x] StatusDot `warn`·ScoreBar `penalty` 색을 등락 `up`에서 분리 — `--warn`(앰버)·`--danger`(전용 레드) 토큰 신설 (2026-06-05)
@@ -221,6 +227,7 @@ npm run dev
 - [ ] Dockerfile(fastapi/dashboard) + Deployment/CronJob YAML + liveness probe 통합 테스트
 
 **기타**
+- [ ] 메인 신규 4섹션(MarketOverview·Watchlist·SectorDistribution + Top3 강도) Figma 역반영 (figma-implementer) — 코드 먼저 구현, design-qa 일치용
 - [ ] DESIGN.md 사이드바 색 기준 갱신 여부 결정 (현재 코드/디자인은 흰색, 문서는 petrol)
 
 ---
@@ -244,3 +251,4 @@ npm run dev
 - **2026-06-04 (2차 deferred 수정 — ultracode 워크플로 7에이전트)**: 1차 리뷰 deferred를 파일 소유 분리 5에이전트 병렬로 일괄 수정. ① **valueTone 부호 버그**(BacktestResult 초과수익률 `up` 하드코딩 등 → 값 부호 기준 up/down/default, page·tracking·BacktestResult 3곳; 적중률/승률 등 비수익률 항목은 보존). ② **a11y**: 적중 Check/X `aria-hidden`+sr-only, ScoresTable `aria-sort`+정렬 아이콘 aria-hidden+정렬 재선택 토글 버그 보정, SearchInput aria-label 폴백, StateViews 로딩 `role=status`/`aria-live`/sr-only, Dropdown 키보드 내비(Esc/↑↓/Home·End/Enter·Space/Tab·`aria-activedescendant`). ③ **토큰/아이콘**: StatusDot `role=img`+aria-label(색 단독전달 보완)+Warn 스토리, StatCard `down`(Loss) 스토리 — LogoMark(이미 lucide)·AboutSections(이미 시맨틱 토큰)는 1차에서 처리돼 무변경. ④ **market 계약 확장**: scores.json 26종목 market(KOSPI 20·KOSDAQ 6), schemas.py·api.ts `market:Optional`, common.md 6장+9장 결정로그 → 빈 시장 Segmented 실작동. 검증: tsc·lint·`next build`·build-storybook + mock JSON·schemas 로드 전부 통과(직접 재검증). 미반영(디자인 판단): warn/penalty 색 의미 통일, 백테스트 date picker. 진행기록 BUILD_PROGRESS.md. 다음: HDFS 실연동(타 팀 후) → K8s.
 - **2026-06-04 (main 머지)**: 1·2차 작업(커밋 `d2e6150`·`2b4a956`)을 `feat/web-scaffold` 푸시 → **PR [#2](https://github.com/1kds/stock-platform/pull/2) (feat/web-scaffold→main)** 생성 → 충돌 없음(MERGEABLE/CLEAN) 확인 → 머지 완료(머지 커밋 `a47ff4a`). `common.md` 9장 `[scores.market]` 결정(daily_score에 market 컬럼 필요 — Spark 팀 요청)도 main 반영. 브랜치는 후속 웹 작업용으로 유지(미삭제). 다음: HDFS 실연동(수집/분석 팀 작업 후) → K8s 배포(허재성 협업).
 - **2026-06-05 (개인 하네스 정비 + 경고/감점 색 분리)**: ① `.claude/` skills 7종이 타 프로젝트(`current`, 블로그/Supabase) 복붙 상태 → 8team에 맞게 정비: 작업준비(Figma+로컬 탭·프론트+백엔드 dev·sy.md 브리핑)·작업실행(경로·Puppeteer MCP)·작업완료(블로그 발행 제거→sy.md 기록), **verify-backend는 Next+Supabase→FastAPI 계약 검증**(HDFS경로·읽기전용·symbol·스키마·CORS·폴백·/health)으로 재작성, **uitest는 Pencil→Figma+localhost**로 재작성, verify-implementation·manage-skills 목록 갱신. hooks 4종 동작 검증(정상, 무변경). skills를 `.gitignore`에 추가(로컬 전용 — hooks·agents와 동일). ② **경고/감점 색을 등락(up)에서 분리**(2차 deferred 항목): globals.css `--warn`(앰버)·`--danger`(전용 레드) 토큰 + StatusDot 경고 bg-warn·ScoreBar 감점 bg-danger/text-danger + DESIGN.md 기록. 검증: 백엔드 계약 7항목 + tsc·lint·`next build`·build-storybook·하드코딩색 0 전부 통과 + 컴파일 CSS에 warn/danger 유틸 생성 확인. (커밋 `8e1f68e`)
+- **2026-06-06 (메인 대시보드 보강)**: 가진 데이터(`/api/scores` 26종목)로 백엔드 변경 없이 메인 4종 추가. ① **MarketOverview** 시장 요약 띠(분석 종목수·KOSPI20/KOSDAQ6·평균 점수·등급 분포 바 — score 토큰), ② **Watchlist** 4~10위 간략 테이블 + "전체 보기"→/scores, ③ **SectorDistribution** 업종별 가로 막대, ④ **Top3Card 강점 강도** — 태그 1→상위 3개 + 0~100 강도 숫자(`점수/최대배점×100`, 예 삼성전자 수급90·모멘텀90·저평가88). 신규 organism 3종 각 4파일(Storybook 포함, 훅이 Story 누락 강제). `lib/marketSummary.ts`(summarizeScores·sectorDistribution) + `lib/scores.ts`에 `scoreTier()`·`topStrengths()` 추출 → ScoreBadge가 임계값 재사용(중복 제거). page.tsx: getScores fetch 연결 + **Top3 카드를 헤더 바로 아래 최상단** 배치. 검증: tsc·lint·`next build`(9라우트)·build-storybook·하드코딩색 0 전부 통과(브라우저 스크린샷은 이번 세션 Puppeteer MCP 미연결로 생략, dev 서버 기동해 사용자 육안 확인). 미반영: 신규 4섹션 Figma 역반영. (커밋 `a330f76`)
