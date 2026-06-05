@@ -1,14 +1,12 @@
 import { cn } from "@/lib/utils";
-import { SCORE_ITEMS } from "@/lib/scores";
+import { topStrengths } from "@/lib/scores";
 import { ScoreBadge } from "@/components/atoms/ScoreBadge";
 import { Tag } from "@/components/atoms/Tag";
 import type { Top3CardProps } from "./Top3Card.types";
 
-/** Top3 추천 카드(슬림). 클릭 시 onClick → 상세 모달. 강점 태그는 점수 데이터로 산출. */
+/** Top3 추천 카드(슬림). 클릭 시 onClick → 상세 모달. 강점 태그 상위 3개는 점수 데이터로 산출. */
 export function Top3Card({ item, rankAccent = false, onClick, className }: Top3CardProps) {
-  const strongest = SCORE_ITEMS.reduce((a, b) =>
-    item.scores[b.key] / b.max > item.scores[a.key] / a.max ? b : a,
-  );
+  const strengths = topStrengths(item.scores, 3);
   return (
     <button
       type="button"
@@ -31,7 +29,17 @@ export function Top3Card({ item, rankAccent = false, onClick, className }: Top3C
         </div>
         <ScoreBadge score={item.final_score} />
       </div>
-      <Tag className="self-start">{strongest.label} 우위</Tag>
+      <div className="flex flex-wrap gap-1.5">
+        {strengths.map((s, i) => {
+          // 강도: 해당 항목 점수 ÷ 최대 배점 → 0~100. 항목별 만점이 달라도 비교 가능.
+          const intensity = Math.round((item.scores[s.key] / s.max) * 100);
+          return (
+            <Tag key={s.key} tone={i === 0 ? "green" : "neutral"}>
+              {s.label} <span className="ml-0.5 tabular-nums font-bold">{intensity}</span>
+            </Tag>
+          );
+        })}
+      </div>
       <p className="text-sm text-muted-foreground">{item.reason}</p>
     </button>
   );

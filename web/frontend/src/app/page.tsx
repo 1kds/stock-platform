@@ -2,16 +2,22 @@
 
 import { useEffect, useState } from "react";
 import {
+  getScores,
   getTop3,
   getTracking,
+  type ScoresResponse,
   type Top3Response,
   type TrackingResponse,
   type Top3Item,
 } from "@/lib/api";
 import { signedPercent } from "@/lib/utils";
+import { summarizeScores, sectorDistribution } from "@/lib/marketSummary";
 import type { StatCardProps } from "@/components/molecules/StatCard";
+import { MarketOverview } from "@/components/organisms/MarketOverview";
 import { KpiGrid } from "@/components/organisms/KpiGrid";
 import { Top3Grid } from "@/components/organisms/Top3Grid";
+import { Watchlist } from "@/components/organisms/Watchlist";
+import { SectorDistribution } from "@/components/organisms/SectorDistribution";
 import { ReturnChart } from "@/components/organisms/ReturnChart";
 import { HistoryTable } from "@/components/organisms/HistoryTable";
 import { StockDetailModal } from "@/components/organisms/StockDetailModal";
@@ -20,6 +26,7 @@ import { LoadingState, ErrorState } from "@/components/organisms/StateViews";
 export default function DashboardPage() {
   const [top3, setTop3] = useState<Top3Response | null>(null);
   const [tracking, setTracking] = useState<TrackingResponse | null>(null);
+  const [scores, setScores] = useState<ScoresResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Top3Item | null>(null);
   const [open, setOpen] = useState(false);
@@ -27,6 +34,7 @@ export default function DashboardPage() {
   useEffect(() => {
     getTop3().then(setTop3).catch((e) => setError(String(e)));
     getTracking().then(setTracking).catch(() => {});
+    getScores().then(setScores).catch(() => {});
   }, []);
 
   if (error) return <ErrorState message={error} />;
@@ -54,6 +62,12 @@ export default function DashboardPage() {
       ]
     : [];
 
+  const summary = scores ? summarizeScores(scores.scores) : null;
+  const sectors = scores ? sectorDistribution(scores.scores) : [];
+  const watchlistRows = scores
+    ? scores.scores.filter((r) => r.rank >= 4 && r.rank <= 10).sort((a, b) => a.rank - b.rank)
+    : [];
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -63,8 +77,6 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {tracking && <KpiGrid items={kpi} />}
-
       <Top3Grid
         items={top3.top3}
         onSelect={(it) => {
@@ -72,6 +84,17 @@ export default function DashboardPage() {
           setOpen(true);
         }}
       />
+
+      {summary && <MarketOverview summary={summary} />}
+
+      {tracking && <KpiGrid items={kpi} />}
+
+      {scores && (
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Watchlist rows={watchlistRows} className="lg:col-span-2" />
+          <SectorDistribution data={sectors} />
+        </div>
+      )}
 
       {tracking && (
         <div className="grid gap-4 lg:grid-cols-2">
