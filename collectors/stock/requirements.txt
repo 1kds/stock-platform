@@ -1,0 +1,4 @@
+# stock_collector.py 실제 import 기준
+pandas>=2.0.0
+pyarrow>=14.0.0
+pykrx>=1.0.47

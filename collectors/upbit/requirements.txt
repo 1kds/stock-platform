@@ -1,0 +1,5 @@
+# upbit_collector.py 실제 import 기준
+# Upbit Public API (인증 불필요)
+requests>=2.31.0
+pandas>=2.0.0
+pyarrow>=14.0.0

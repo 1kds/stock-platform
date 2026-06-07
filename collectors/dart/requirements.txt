@@ -1,0 +1,6 @@
+# dart_collector.py 실제 import 기준
+# DART API + pykrx 재무비율 수집
+requests>=2.31.0
+pandas>=2.0.0
+pyarrow>=14.0.0
+pykrx>=1.0.47

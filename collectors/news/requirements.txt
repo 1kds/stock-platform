@@ -1,0 +1,10 @@
+# news_collector.py 실제 import 기준
+# 네이버 금융 크롤링 (API 키 불필요)
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+pandas>=2.0.0
+pyarrow>=14.0.0
+pykrx>=1.0.47
+
+# news_sentiment.py: Gemini 감성 분석
+google-genai>=1.0.0
