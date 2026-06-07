@@ -40,19 +40,12 @@ spec:
                   value: "07"
                 - name: DATA_FORMAT
                   value: "parquet"
-                # 네이버 API (optional=true → 없어도 Pod 실행됨)
-                - name: NAVER_CLIENT_ID
+                # news_sentiment.py: Gemini 감성 분석
+                - name: GEMINI_API_KEY
                   valueFrom:
                     secretKeyRef:
                       name: external-api-keys
-                      key: NAVER_CLIENT_ID
-                      optional: true
-                - name: NAVER_CLIENT_SECRET
-                  valueFrom:
-                    secretKeyRef:
-                      name: external-api-keys
-                      key: NAVER_CLIENT_SECRET
-                      optional: true
+                      key: GEMINI_API_KEY
               resources:
                 requests:
                   cpu: "250m"

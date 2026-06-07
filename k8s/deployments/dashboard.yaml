@@ -30,7 +30,6 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
-            # K8s 내부에서 fastapi-server 서비스 주소로 호출
             - name: NEXT_PUBLIC_API_BASE
               value: "http://fastapi-server:8000"
           livenessProbe:

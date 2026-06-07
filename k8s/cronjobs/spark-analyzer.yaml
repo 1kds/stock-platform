@@ -16,7 +16,6 @@ spec:
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
-      # Spark 분석 타임아웃 1시간
       activeDeadlineSeconds: 3600
       template:
         metadata:
@@ -32,7 +31,6 @@ spec:
               image: master:5000/stock-platform/spark-analyzer:latest
               imagePullPolicy: Always
               env:
-                # 공통 규격 §10 필수 환경변수
                 - name: HDFS_BASE
                   value: "hdfs://namenode:9000"
                 - name: YEAR
@@ -43,7 +41,7 @@ spec:
                   value: "07"
                 - name: DATA_FORMAT
                   value: "parquet"
-                # 점수 가중치 (ConfigMap §5)
+                # 점수 가중치 (ConfigMap)
                 - name: UNDERVALUATION_WEIGHT
                   valueFrom:
                     configMapKeyRef:

@@ -40,6 +40,12 @@ spec:
                   value: "07"
                 - name: DATA_FORMAT
                   value: "parquet"
+                # Gemini AI - 리포트 생성
+                - name: GEMINI_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: external-api-keys
+                      key: GEMINI_API_KEY
               resources:
                 requests:
                   cpu: "250m"

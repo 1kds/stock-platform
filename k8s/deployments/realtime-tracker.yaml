@@ -38,22 +38,17 @@ spec:
               value: "07"
             - name: DATA_FORMAT
               value: "parquet"
-            # 한투 KIS API 키
-            - name: KIS_APP_KEY
+            # KRX 로그인 (실시간 데이터 조회용)
+            - name: KRX_ID
               valueFrom:
                 secretKeyRef:
                   name: external-api-keys
-                  key: KIS_APP_KEY
-            - name: KIS_APP_SECRET
+                  key: KRX_ID
+            - name: KRX_PW
               valueFrom:
                 secretKeyRef:
                   name: external-api-keys
-                  key: KIS_APP_SECRET
-            - name: KIS_ACCOUNT_NUMBER
-              valueFrom:
-                secretKeyRef:
-                  name: external-api-keys
-                  key: KIS_ACCOUNT_NUMBER
+                  key: KRX_PW
           resources:
             requests:
               cpu: "250m"

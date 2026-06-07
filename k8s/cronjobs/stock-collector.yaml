@@ -30,7 +30,6 @@ spec:
               image: master:5000/stock-platform/stock-collector:latest
               imagePullPolicy: Always
               env:
-                # 공통 규격 §10 필수 환경변수
                 - name: HDFS_BASE
                   value: "hdfs://namenode:9000"
                 - name: YEAR
@@ -41,12 +40,17 @@ spec:
                   value: "07"
                 - name: DATA_FORMAT
                   value: "parquet"
-                # DART API 키
-                - name: DART_API_KEY
+                # KRX 로그인 (pykrx)
+                - name: KRX_ID
                   valueFrom:
                     secretKeyRef:
                       name: external-api-keys
-                      key: DART_API_KEY
+                      key: KRX_ID
+                - name: KRX_PW
+                  valueFrom:
+                    secretKeyRef:
+                      name: external-api-keys
+                      key: KRX_PW
               resources:
                 requests:
                   cpu: "250m"
