@@ -1,0 +1,6 @@
+# stock_analyzer.py 실제 import 기준
+# pyspark는 Spark 설치에 포함 → pip 설치 불필요
+# pyarrow: parquet 읽기/쓰기
+pyspark==3.5.1
+pyarrow>=14.0.0
+pandas>=2.0.0
