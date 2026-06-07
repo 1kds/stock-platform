@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: stock-platform
+  labels:
+    app: dashboard
+    team: team8
+    type: deployment
+    tier: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+        team: team8
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker3
+      containers:
+        - name: dashboard
+          image: master:5000/stock-platform/dashboard:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            # K8s 내부에서 fastapi-server 서비스 주소로 호출
+            - name: NEXT_PUBLIC_API_BASE
+              value: "http://fastapi-server:8000"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

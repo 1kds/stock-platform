@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scoring-weights
+  namespace: stock-platform
+  labels:
+    team: team8
+data:
+  # -------------------------------------------------------
+  # 공통 규격 §5 배점 기준
+  # final_score = 각 항목 합산 - risk_score
+  # 출력 컬럼(§8): undervaluation_score, investor_flow_score,
+  #   volume_spike_score, news_keyword_score, momentum_score,
+  #   earnings_score, risk_score, base_score, final_score,
+  #   selected_reason, risk_signal
+  # -------------------------------------------------------
+  UNDERVALUATION_WEIGHT: "25"   # 저평가 (PER/PBR 업종 하위 25% + ROE)
+  INVESTOR_FLOW_WEIGHT: "20"    # 수급 (외국인·기관 5일 누적 순매수)
+  VOLUME_SPIKE_WEIGHT: "15"     # 거래량 (20일 평균 대비 급등)
+  NEWS_KEYWORD_WEIGHT: "10"     # 뉴스 (긍정/부정 키워드)
+  MOMENTUM_WEIGHT: "20"         # 모멘텀 (5·20일 수익률 + 이동평균)
+  EARNINGS_WEIGHT: "10"         # 실적 (매출·영업이익 성장률)
+  RISK_PENALTY_MAX: "10"        # 리스크 패널티 최대 감점

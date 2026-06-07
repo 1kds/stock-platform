@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dart-collector
+  namespace: stock-platform
+  labels:
+    app: dart-collector
+    team: team8
+    type: cronjob
+    tier: collector
+spec:
+  # 평일 20:20 KST (UTC 11:20)
+  schedule: "20 11 * * 1-5"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: dart-collector
+            team: team8
+        spec:
+          nodeSelector:
+            kubernetes.io/hostname: worker1
+          restartPolicy: OnFailure
+          containers:
+            - name: dart-collector
+              image: master:5000/stock-platform/dart-collector:latest
+              imagePullPolicy: Always
+              env:
+                - name: HDFS_BASE
+                  value: "hdfs://namenode:9000"
+                - name: YEAR
+                  value: "2026"
+                - name: MONTH
+                  value: "06"
+                - name: DAY
+                  value: "07"
+                - name: DATA_FORMAT
+                  value: "parquet"
+                - name: DART_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: external-api-keys
+                      key: DART_API_KEY
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"

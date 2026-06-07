@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: report-generator
+  namespace: stock-platform
+  labels:
+    app: report-generator
+    team: team8
+    type: cronjob
+    tier: service
+spec:
+  # 평일 08:00 KST (UTC 23:00 전날)
+  schedule: "0 23 * * 0-4"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: report-generator
+            team: team8
+        spec:
+          nodeSelector:
+            kubernetes.io/hostname: worker3
+          restartPolicy: OnFailure
+          containers:
+            - name: report-generator
+              image: master:5000/stock-platform/report-generator:latest
+              imagePullPolicy: Always
+              env:
+                - name: HDFS_BASE
+                  value: "hdfs://namenode:9000"
+                - name: YEAR
+                  value: "2026"
+                - name: MONTH
+                  value: "06"
+                - name: DAY
+                  value: "07"
+                - name: DATA_FORMAT
+                  value: "parquet"
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"

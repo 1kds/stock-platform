@@ -1,0 +1,88 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: spark-analyzer
+  namespace: stock-platform
+  labels:
+    app: spark-analyzer
+    team: team8
+    type: cronjob
+    tier: analyzer
+spec:
+  # 평일 07:30 KST (UTC 22:30 전날)
+  schedule: "30 22 * * 0-4"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      # Spark 분석 타임아웃 1시간
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: spark-analyzer
+            team: team8
+        spec:
+          nodeSelector:
+            kubernetes.io/hostname: worker2
+          restartPolicy: OnFailure
+          containers:
+            - name: spark-analyzer
+              image: master:5000/stock-platform/spark-analyzer:latest
+              imagePullPolicy: Always
+              env:
+                # 공통 규격 §10 필수 환경변수
+                - name: HDFS_BASE
+                  value: "hdfs://namenode:9000"
+                - name: YEAR
+                  value: "2026"
+                - name: MONTH
+                  value: "06"
+                - name: DAY
+                  value: "07"
+                - name: DATA_FORMAT
+                  value: "parquet"
+                # 점수 가중치 (ConfigMap §5)
+                - name: UNDERVALUATION_WEIGHT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: scoring-weights
+                      key: UNDERVALUATION_WEIGHT
+                - name: INVESTOR_FLOW_WEIGHT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: scoring-weights
+                      key: INVESTOR_FLOW_WEIGHT
+                - name: VOLUME_SPIKE_WEIGHT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: scoring-weights
+                      key: VOLUME_SPIKE_WEIGHT
+                - name: NEWS_KEYWORD_WEIGHT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: scoring-weights
+                      key: NEWS_KEYWORD_WEIGHT
+                - name: MOMENTUM_WEIGHT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: scoring-weights
+                      key: MOMENTUM_WEIGHT
+                - name: EARNINGS_WEIGHT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: scoring-weights
+                      key: EARNINGS_WEIGHT
+                - name: RISK_PENALTY_MAX
+                  valueFrom:
+                    configMapKeyRef:
+                      name: scoring-weights
+                      key: RISK_PENALTY_MAX
+              resources:
+                requests:
+                  cpu: "500m"
+                  memory: "2Gi"
+                limits:
+                  cpu: "1000m"
+                  memory: "4Gi"

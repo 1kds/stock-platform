@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realtime-tracker
+  namespace: stock-platform
+  labels:
+    app: realtime-tracker
+    team: team8
+    type: deployment
+    tier: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: realtime-tracker
+  template:
+    metadata:
+      labels:
+        app: realtime-tracker
+        team: team8
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker3
+      containers:
+        - name: realtime-tracker
+          image: master:5000/stock-platform/realtime-tracker:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8001
+          env:
+            - name: HDFS_BASE
+              value: "hdfs://namenode:9000"
+            - name: YEAR
+              value: "2026"
+            - name: MONTH
+              value: "06"
+            - name: DAY
+              value: "07"
+            - name: DATA_FORMAT
+              value: "parquet"
+            # 한투 KIS API 키
+            - name: KIS_APP_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: external-api-keys
+                  key: KIS_APP_KEY
+            - name: KIS_APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: external-api-keys
+                  key: KIS_APP_SECRET
+            - name: KIS_ACCOUNT_NUMBER
+              valueFrom:
+                secretKeyRef:
+                  name: external-api-keys
+                  key: KIS_ACCOUNT_NUMBER
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
