@@ -1,8 +1,7 @@
 #!/bin/bash
 # =============================================================
 # 8팀 stock-platform 전체 배포 스크립트
-# master VM에서 실행
-# 공통 규격: HDFS replication worker2=2, worker3=3 (§11)
+# master VM에서 실행 (sudo bash deploy.sh)
 # =============================================================
 set -e
 
@@ -26,42 +25,43 @@ echo ""
 echo "=============================="
 echo "3. Docker 이미지 빌드 & Push"
 echo "=============================="
-# 공통 규격 §1: Python 3.10, Java OpenJDK 17, Spark 3.5.1
-# spark-analyzer는 spark_jobs/stock_analyzer.py 경로 사용 (§9)
-
+# 실제 폴더 구조 기준 경로
 declare -A SERVICE_PATHS=(
   ["stock-collector"]="collectors/stock"
   ["dart-collector"]="collectors/dart"
   ["news-collector"]="collectors/news"
-  ["spark-analyzer"]="spark"
-  ["report-generator"]="report"
-  ["realtime-tracker"]="tracker"
+  ["upbit-collector"]="collectors/upbit"
+  ["spark-analyzer"]="analyzer"
   ["fastapi-server"]="web/backend"
   ["dashboard"]="web/frontend"
 )
 
 for service in "${!SERVICE_PATHS[@]}"; do
   path="${SERVICE_PATHS[$service]}"
-  echo ">>> Building $service from ./$path"
-  docker build -t $REGISTRY/$PROJECT/$service:latest ./$path/
-  docker push $REGISTRY/$PROJECT/$service:latest
+  if [ -d "./$path" ]; then
+    echo ">>> Building $service from ./$path"
+    docker build -t $REGISTRY/$PROJECT/$service:latest ./$path/
+    docker push $REGISTRY/$PROJECT/$service:latest
+  else
+    echo "⚠️  경로 없음 (건너뜀): ./$path"
+  fi
 done
 
 echo ""
 echo "=============================="
-echo "4. CronJob 5종 적용"
+echo "4. CronJob 적용"
 echo "=============================="
 kubectl apply -f k8s/cronjobs/
 
 echo ""
 echo "=============================="
-echo "5. Deployment 3종 적용"
+echo "5. Deployment 적용"
 echo "=============================="
 kubectl apply -f k8s/deployments/
 
 echo ""
 echo "=============================="
-echo "6. Service 3종 적용"
+echo "6. Service 적용"
 echo "=============================="
 kubectl apply -f k8s/services/
 
@@ -83,6 +83,7 @@ kubectl get all -n $NAMESPACE
 echo ""
 echo "=============================="
 echo "배포 완료!"
-echo "대시보드:  http://$(kubectl get nodes master -o jsonpath='{.status.addresses[0].address}' 2>/dev/null || echo 'master'):30000"
-echo "FastAPI:   http://$(kubectl get nodes master -o jsonpath='{.status.addresses[0].address}' 2>/dev/null || echo 'master'):30080/docs"
+MASTER_IP=$(kubectl get nodes master -o jsonpath='{.status.addresses[0].address}' 2>/dev/null || echo 'master')
+echo "대시보드:  http://$MASTER_IP:30000"
+echo "FastAPI:   http://$MASTER_IP:30080/docs"
 echo "=============================="
