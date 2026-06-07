@@ -3,11 +3,12 @@ FROM node:20-slim AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+
+# --legacy-peer-deps: storybook peer dependency 충돌 무시
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 
-# K8s 내부 fastapi-server 주소
 ENV NEXT_PUBLIC_API_BASE=http://fastapi-server:8000
 
 RUN npm run build
