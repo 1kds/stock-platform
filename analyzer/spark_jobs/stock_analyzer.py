@@ -10,33 +10,36 @@ from pyspark.sql.functions import (
     lpad,
     concat_ws,
     row_number,
-    coalesce,
     greatest,
     least,
 )
 from pyspark.sql.window import Window
-
+from pyspark.sql.types import (
+    StructType,
+    StructField,
+    StringType,
+    DoubleType,
+)
 
 # =========================================================
 # 0. 환경변수 설정
 # =========================================================
 # 로컬 CSV 테스트 예시:
-#   export DATA_FORMAT=csv
-#   export LOCAL_INPUT_BASE=data_sample
-#   export LOCAL_OUTPUT_BASE=output
-#   python analyzer/spark_jobs/stock_analyzer.py
+# export DATA_FORMAT=csv
+# export LOCAL_INPUT_BASE=data_sample
+# export LOCAL_OUTPUT_BASE=output
+# python analyzer/spark_jobs/stock_analyzer.py
 #
 # HDFS + Parquet 통합 테스트 예시:
-#   export DATA_FORMAT=parquet
-#   export HDFS_BASE=hdfs://namenode:9000
-#   export YEAR=2026
-#   export MONTH=05
-#   export DAY=04
-#   spark-submit analyzer/spark_jobs/stock_analyzer.py
+# export DATA_FORMAT=parquet
+# export HDFS_BASE=hdfs://namenode:9000
+# export YEAR=2026
+# export MONTH=05
+# export DAY=04
+# spark-submit analyzer/spark_jobs/stock_analyzer.py
 
 DATA_FORMAT = os.getenv("DATA_FORMAT", "parquet").lower()
 HDFS_BASE = os.getenv("HDFS_BASE", "hdfs://localhost:9000")
-
 LOCAL_INPUT_BASE = os.getenv("LOCAL_INPUT_BASE", "data_sample")
 LOCAL_OUTPUT_BASE = os.getenv("LOCAL_OUTPUT_BASE", "output")
 
@@ -47,10 +50,10 @@ RUN_DATE = f"{YEAR}-{MONTH}-{DAY}"
 
 APPLY_LIQUIDITY_FILTER = os.getenv("APPLY_LIQUIDITY_FILTER", "false").lower() == "true"
 
-
 # =========================================================
 # 1. SparkSession 생성
 # =========================================================
+
 spark = (
     SparkSession.builder
     .appName("StockTop3Analyzer")
@@ -60,10 +63,93 @@ spark = (
 
 spark.sparkContext.setLogLevel("WARN")
 
+# =========================================================
+# 2. 스키마 정의
+# =========================================================
+
+ohlcv_schema = StructType([
+    StructField("symbol", StringType(), True),
+    StructField("name", StringType(), True),
+    StructField("date", StringType(), True),
+    StructField("market", StringType(), True),
+    StructField("open", DoubleType(), True),
+    StructField("high", DoubleType(), True),
+    StructField("low", DoubleType(), True),
+    StructField("close", DoubleType(), True),
+    StructField("volume", DoubleType(), True),
+    StructField("trade_value", DoubleType(), True),
+    StructField("change_rate", DoubleType(), True),
+    StructField("market_cap", DoubleType(), True),
+    StructField("prev_close", DoubleType(), True),
+    StructField("close_5d_ago", DoubleType(), True),
+    StructField("close_20d_ago", DoubleType(), True),
+    StructField("ma5", DoubleType(), True),
+    StructField("ma20", DoubleType(), True),
+    StructField("ma60", DoubleType(), True),
+    StructField("volume_avg_20", DoubleType(), True),
+    StructField("volume_ratio_20", DoubleType(), True),
+    StructField("high_52w", DoubleType(), True),
+    StructField("low_52w", DoubleType(), True),
+    StructField("volatility_20", DoubleType(), True),
+])
+
+investor_schema = StructType([
+    StructField("symbol", StringType(), True),
+    StructField("foreign_net_buy_1d", DoubleType(), True),
+    StructField("foreign_net_buy_2d", DoubleType(), True),
+    StructField("foreign_net_buy_3d", DoubleType(), True),
+    StructField("foreign_net_buy_5d", DoubleType(), True),
+    StructField("foreign_net_buy_5d_sum", DoubleType(), True),
+    StructField("institution_net_buy_1d", DoubleType(), True),
+    StructField("institution_net_buy_2d", DoubleType(), True),
+    StructField("institution_net_buy_3d", DoubleType(), True),
+    StructField("institution_net_buy_5d", DoubleType(), True),
+    StructField("institution_net_buy_5d_sum", DoubleType(), True),
+    StructField("individual_net_buy_1d", DoubleType(), True),
+    StructField("individual_net_buy_2d", DoubleType(), True),
+    StructField("individual_net_buy_3d", DoubleType(), True),
+    StructField("individual_net_buy_5d", DoubleType(), True),
+    StructField("foreign_net_amount_1d", DoubleType(), True),
+    StructField("institution_net_amount_1d", DoubleType(), True),
+    StructField("foreign_net_buy_amount", DoubleType(), True),
+    StructField("institution_net_buy_amount", DoubleType(), True),
+    StructField("foreign_holding_ratio", DoubleType(), True),
+])
+
+financial_schema = StructType([
+    StructField("symbol", StringType(), True),
+    StructField("name", StringType(), True),
+    StructField("sector", StringType(), True),
+    StructField("market", StringType(), True),
+    StructField("date", StringType(), True),
+    StructField("per", DoubleType(), True),
+    StructField("pbr", DoubleType(), True),
+    StructField("roe", DoubleType(), True),
+    StructField("eps", DoubleType(), True),
+    StructField("bps", DoubleType(), True),
+    StructField("dividend_yield", DoubleType(), True),
+    StructField("per_q25", DoubleType(), True),
+    StructField("pbr_q25", DoubleType(), True),
+    StructField("market_cap", DoubleType(), True),
+    StructField("debt_ratio", DoubleType(), True),
+    StructField("operating_margin", DoubleType(), True),
+    StructField("revenue_growth", DoubleType(), True),
+    StructField("operating_profit_growth", DoubleType(), True),
+])
+
+news_schema = StructType([
+    StructField("symbol", StringType(), True),
+    StructField("date", StringType(), True),
+    StructField("published_at", StringType(), True),
+    StructField("source", StringType(), True),
+    StructField("title", StringType(), True),
+    StructField("sentiment_score", DoubleType(), True),
+])
 
 # =========================================================
-# 2. 경로 설정
+# 3. 경로 설정
 # =========================================================
+
 def get_input_paths():
     if DATA_FORMAT == "csv":
         return {
@@ -114,9 +200,30 @@ def read_data(path):
     raise ValueError(f"Unsupported DATA_FORMAT: {DATA_FORMAT}")
 
 
+def empty_df(schema):
+    return spark.createDataFrame([], schema)
+
+
+def read_optional_data(name, path, schema):
+    """
+    investor / financial / news처럼 없어도 분석이 계속되어야 하는 입력용.
+    경로 없음, 파일 없음, 스키마 불일치 등이 발생하면 빈 DataFrame으로 대체한다.
+    """
+    try:
+        df = read_data(path)
+        print(f"[INFO] {name} loaded: {path}")
+        return df
+    except Exception as exc:
+        print(f"[WARN] {name} not available. Use empty DataFrame.")
+        print(f"[WARN] {name} path: {path}")
+        print(f"[WARN] {name} error: {exc}")
+        return empty_df(schema)
+
+
 # =========================================================
-# 3. 공통 보정 함수
+# 4. 공통 보정 함수
 # =========================================================
+
 def ensure_column(df, column_name, default_value, data_type):
     if column_name not in df.columns:
         return df.withColumn(column_name, lit(default_value).cast(data_type))
@@ -132,6 +239,7 @@ def ensure_double_column(df, column_name, default_value=0.0):
 
 
 def normalize_symbol(df):
+    df = ensure_string_column(df, "symbol", "")
     return df.withColumn("symbol", lpad(col("symbol").cast("string"), 6, "0"))
 
 
@@ -142,8 +250,9 @@ def rename_if_exists(df, old_name, new_name):
 
 
 # =========================================================
-# 4. 데이터 읽기
+# 5. 데이터 읽기
 # =========================================================
+
 paths = get_input_paths()
 out_paths = get_output_paths()
 
@@ -153,20 +262,23 @@ print(f"HDFS_BASE={HDFS_BASE}")
 print(f"YEAR={YEAR}, MONTH={MONTH}, DAY={DAY}, RUN_DATE={RUN_DATE}")
 print("=====================")
 
+# OHLCV는 핵심 입력이므로 없으면 실패시키는 것이 맞음
 ohlcv = read_data(paths["ohlcv"])
-investor = read_data(paths["investor"])
-financial = read_data(paths["financial"])
-news = read_data(paths["news"])
+
+# 아래 3개는 없어도 분석 가능하도록 빈 DataFrame 대체
+investor = read_optional_data("investor", paths["investor"], investor_schema)
+financial = read_optional_data("financial", paths["financial"], financial_schema)
+news = read_optional_data("news", paths["news"], news_schema)
 
 ohlcv = normalize_symbol(ohlcv)
 investor = normalize_symbol(investor)
 financial = normalize_symbol(financial)
 news = normalize_symbol(news)
 
+# =========================================================
+# 6. 입력 컬럼 보정
+# =========================================================
 
-# =========================================================
-# 5. 입력 컬럼 보정
-# =========================================================
 # ---------- OHLCV ----------
 ohlcv = ensure_string_column(ohlcv, "name", "")
 ohlcv = ensure_string_column(ohlcv, "date", RUN_DATE)
@@ -227,14 +339,6 @@ ohlcv = (
 )
 
 # ---------- Investor ----------
-# 실제 common.md 기준 컬럼:
-# foreign_net_buy_1d / 2d / 3d / 5d
-# institution_net_buy_1d / 2d / 3d / 5d
-# individual_net_buy_1d / 2d / 3d / 5d
-# foreign_net_amount_1d
-# foreign_holding_ratio
-#
-# 기존 analyzer에서 쓰던 *_5d_sum, *_amount 컬럼과 호환되도록 alias 처리
 investor = rename_if_exists(investor, "foreign_net_buy_5d", "foreign_net_buy_5d_sum")
 investor = rename_if_exists(investor, "institution_net_buy_5d", "institution_net_buy_5d_sum")
 investor = rename_if_exists(investor, "foreign_net_amount_1d", "foreign_net_buy_amount")
@@ -282,6 +386,7 @@ investor = (
 # ---------- Financial ----------
 financial = ensure_string_column(financial, "name", "")
 financial = ensure_string_column(financial, "sector", "미분류")
+financial = ensure_string_column(financial, "market", "KOSPI")
 financial = ensure_string_column(financial, "date", RUN_DATE)
 
 financial_numeric_cols = {
@@ -303,8 +408,12 @@ financial_numeric_cols = {
 for c, default in financial_numeric_cols.items():
     financial = ensure_double_column(financial, c, default)
 
-# financial.market_cap은 OHLCV market_cap과 이름 충돌 방지
-financial = financial.withColumnRenamed("market_cap", "financial_market_cap")
+if "financial_market_cap" not in financial.columns:
+    financial = financial.withColumnRenamed("market_cap", "financial_market_cap")
+else:
+    financial = financial.drop("market_cap")
+
+financial = ensure_double_column(financial, "financial_market_cap", 0.0)
 
 # ---------- News ----------
 news = ensure_string_column(news, "date", RUN_DATE)
@@ -313,13 +422,10 @@ news = ensure_string_column(news, "source", "unknown")
 news = ensure_string_column(news, "title", "")
 news = ensure_double_column(news, "sentiment_score", 0.0)
 
+# =========================================================
+# 7. 재무 점수 계산
+# =========================================================
 
-# =========================================================
-# 6. 재무 점수 계산
-# common.md 기준:
-# undervaluation_score 최대 25
-# earnings_score 최대 10
-# =========================================================
 per_condition = (col("per_q25") > 0) & (col("per") > 0) & (col("per") <= col("per_q25"))
 pbr_condition = (col("pbr_q25") > 0) & (col("pbr") > 0) & (col("pbr") <= col("pbr_q25"))
 roe_condition = col("roe") >= 15
@@ -353,14 +459,15 @@ financial_score = (
     )
 )
 
+financial_score = ensure_string_column(financial_score, "sector", "미분류")
+financial_score = ensure_string_column(financial_score, "name", "")
+financial_score = ensure_string_column(financial_score, "market", "KOSPI")
+financial_score = ensure_double_column(financial_score, "financial_market_cap", 0.0)
 
 # =========================================================
-# 7. 수급 점수 계산
-# common.md 기준:
-# investor_flow_score 최대 20
-# 외국인 5일 누적 순매수 양수 +10
-# 기관 5일 누적 순매수 양수 +10
+# 8. 수급 점수 계산
 # =========================================================
+
 investor_score = (
     investor
     .withColumn(
@@ -370,12 +477,10 @@ investor_score = (
     )
 )
 
+# =========================================================
+# 9. 거래량 / 모멘텀 점수 계산
+# =========================================================
 
-# =========================================================
-# 8. 거래량 / 모멘텀 점수 계산
-# volume_spike_score 최대 15
-# momentum_score 최대 20
-# =========================================================
 volume_score = (
     ohlcv
     .withColumn(
@@ -412,42 +517,21 @@ momentum_score = (
     )
 )
 
+# =========================================================
+# 10. 뉴스 점수 계산
+# =========================================================
 
-# =========================================================
-# 9. 뉴스 점수 계산
-# common.md 기준:
-# news_keyword_score 최대 10
-# sentiment_score가 있으면 우선 반영, 없으면 키워드 기반
-# =========================================================
 positive_keywords = [
-    "수주",
-    "공급계약",
-    "흑자전환",
-    "실적개선",
-    "증설",
-    "신규투자",
-    "승인",
-    "자사주",
-    "배당",
-    "계약",
-    "신제품",
-    "호재",
+    "수주", "공급계약", "흑자전환", "실적개선", "증설", "신규투자",
+    "승인", "자사주", "배당", "계약", "신제품", "호재",
 ]
 
 negative_keywords = [
-    "적자",
-    "소송",
-    "상장폐지",
-    "감자",
-    "횡령",
-    "배임",
-    "실적악화",
-    "불성실공시",
-    "악재",
-    "감사의견",
+    "적자", "소송", "상장폐지", "감자", "횡령", "배임",
+    "실적악화", "불성실공시", "악재", "감사의견",
 ]
 
-news_score = news.withColumn("title_lower", lower(col("title")))
+news_score_base = news.withColumn("title_lower", lower(col("title")))
 
 positive_condition = None
 for keyword in positive_keywords:
@@ -459,14 +543,14 @@ for keyword in negative_keywords:
     condition = col("title").contains(keyword)
     negative_condition = condition if negative_condition is None else (negative_condition | condition)
 
-news_score = (
-    news_score
+news_score_base = (
+    news_score_base
     .withColumn("positive_hit", when(positive_condition, 1).otherwise(0))
     .withColumn("negative_hit", when(negative_condition, 1).otherwise(0))
 )
 
 news_score = (
-    news_score
+    news_score_base
     .groupBy("symbol")
     .agg(
         spark_sum("positive_hit").alias("positive_news_count"),
@@ -490,10 +574,10 @@ news_score = (
     )
 )
 
+# =========================================================
+# 11. Join
+# =========================================================
 
-# =========================================================
-# 10. Join
-# =========================================================
 score_df = (
     momentum_score
     .join(
@@ -546,6 +630,13 @@ score_df = (
     .fillna(0)
 )
 
+score_df = ensure_string_column(score_df, "name", "")
+score_df = ensure_string_column(score_df, "sector", "미분류")
+score_df = ensure_string_column(score_df, "market", "KOSPI")
+score_df = ensure_string_column(score_df, "date", RUN_DATE)
+score_df = ensure_double_column(score_df, "financial_market_cap", 0.0)
+score_df = ensure_double_column(score_df, "market_cap", 0.0)
+
 score_df = (
     score_df
     .withColumn(
@@ -570,13 +661,10 @@ score_df = (
     )
 )
 
+# =========================================================
+# 12. risk_penalty 계산
+# =========================================================
 
-# =========================================================
-# 11. risk_penalty 계산
-# common.md 기준:
-# risk_penalty는 양수 감점값
-# final_score = base_score - risk_penalty
-# =========================================================
 score_df = score_df.withColumn("risk_penalty", lit(0.0))
 
 score_df = score_df.withColumn(
@@ -596,13 +684,12 @@ score_df = score_df.withColumn(
     .otherwise(col("risk_penalty")),
 )
 
-# 기존 코드/팀원 호환용: risk_score는 음수 감점값으로 함께 제공
 score_df = score_df.withColumn("risk_score", -col("risk_penalty"))
 
+# =========================================================
+# 13. base_score / final_score 계산
+# =========================================================
 
-# =========================================================
-# 12. base_score / final_score 계산
-# =========================================================
 score_df = (
     score_df
     .withColumn(
@@ -617,10 +704,10 @@ score_df = (
     .withColumn("final_score", col("base_score") - col("risk_penalty"))
 )
 
+# =========================================================
+# 14. 선정 이유 / 위험 신호 생성
+# =========================================================
 
-# =========================================================
-# 13. 선정 이유 / 위험 신호 생성
-# =========================================================
 score_df = (
     score_df
     .withColumn(
@@ -653,24 +740,23 @@ score_df = (
         "risk_signal",
         when(col("risk_signal") == "", lit("특이 위험 신호 없음")).otherwise(col("risk_signal")),
     )
-    # API 응답 예시의 reason 필드와도 호환되도록 alias 제공
     .withColumn("reason", col("selected_reason"))
 )
 
+# =========================================================
+# 15. 유동성 필터
+# =========================================================
 
-# =========================================================
-# 14. 유동성 필터
-# =========================================================
 if APPLY_LIQUIDITY_FILTER:
     score_df = score_df.filter(
         (col("trade_value") >= 5_000_000_000)
         & (col("market_cap") >= 100_000_000_000)
     )
 
+# =========================================================
+# 16. rank / Top3 선정
+# =========================================================
 
-# =========================================================
-# 15. rank / Top3 선정
-# =========================================================
 rank_window = Window.orderBy(
     col("final_score").desc(),
     col("base_score").desc(),
@@ -680,10 +766,10 @@ rank_window = Window.orderBy(
 score_df = score_df.withColumn("rank", row_number().over(rank_window))
 top3 = score_df.filter(col("rank") <= 3).orderBy(col("rank").asc())
 
+# =========================================================
+# 17. 출력 컬럼 정리
+# =========================================================
 
-# =========================================================
-# 16. 출력 컬럼 정리
-# =========================================================
 daily_score_cols = [
     "symbol",
     "name",
@@ -728,13 +814,20 @@ top3_cols = [
     "risk_signal",
 ]
 
+for c in daily_score_cols:
+    if c not in score_df.columns:
+        if c in ["symbol", "name", "sector", "market", "date", "selected_reason", "reason", "risk_signal"]:
+            score_df = ensure_string_column(score_df, c, "")
+        else:
+            score_df = ensure_double_column(score_df, c, 0.0)
+
 daily_score = score_df.select(*daily_score_cols)
 top3_result = top3.select(*top3_cols)
 
+# =========================================================
+# 18. 결과 출력
+# =========================================================
 
-# =========================================================
-# 17. 결과 출력
-# =========================================================
 print("===== INPUT COUNT =====")
 print(f"ohlcv: {ohlcv.count()}")
 print(f"investor: {investor.count()}")
@@ -747,14 +840,10 @@ daily_score.show(truncate=False)
 print("===== Top 3 종목 =====")
 top3_result.show(truncate=False)
 
+# =========================================================
+# 19. 결과 저장
+# =========================================================
 
-# =========================================================
-# 18. 결과 저장
-# 최종 규격:
-# - daily_score: Parquet
-# - top3: Parquet
-# - top3_json: JSON
-# =========================================================
 daily_score.write.mode("overwrite").parquet(out_paths["daily_score"])
 top3_result.write.mode("overwrite").parquet(out_paths["top3"])
 top3_result.coalesce(1).write.mode("overwrite").json(out_paths["top3_json"])
