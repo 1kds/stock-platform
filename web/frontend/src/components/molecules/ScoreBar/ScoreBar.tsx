@@ -9,14 +9,14 @@ export function ScoreBar({ label, value, max, penalty = false, className }: Scor
       <span className="w-14 shrink-0 text-sm text-muted-foreground">{label}</span>
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
         <div
-          className={cn("h-full rounded-full", penalty ? "bg-up" : "bg-accent")}
+          className={cn("h-full rounded-full", penalty ? "bg-danger" : "bg-accent")}
           style={{ width: `${pct}%` }}
         />
       </div>
       <span
         className={cn(
           "w-16 shrink-0 text-right text-xs font-semibold tabular-nums",
-          penalty ? "text-up" : "text-primary",
+          penalty ? "text-danger" : "text-primary",
         )}
       >
         {penalty ? "−" : ""}

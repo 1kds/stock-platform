@@ -1,10 +1,13 @@
 import { cn } from "@/lib/utils";
+import { scoreTier } from "@/lib/scores";
 import type { ScoreBadgeProps } from "./ScoreBadge.types";
 
 // 점수 등급 → 토큰 색 (DESIGN.md 점수 등급색). 하드코딩 금지, score 토큰만 사용.
+// 임계값은 lib/scores.ts scoreTier() 단일 기준을 따른다.
 function tierClass(score: number): string {
-  if (score >= 80) return "bg-score-high text-primary-foreground";
-  if (score >= 60) return "bg-score-mid text-primary";
+  const tier = scoreTier(score);
+  if (tier === "high") return "bg-score-high text-primary-foreground";
+  if (tier === "mid") return "bg-score-mid text-primary";
   return "bg-score-low text-primary";
 }
 

@@ -27,3 +27,20 @@ export const SCORE_ITEMS: readonly ScoreItemMeta[] = [
 
 /** 리스크 감점 항목의 최대값(점수바 비율 계산용). */
 export const RISK_PENALTY_MAX = 15;
+
+/** 점수 등급. ScoreBadge 색·시장 분포 집계가 공유하는 단일 기준. */
+export type ScoreTier = "high" | "mid" | "low";
+
+/** 최종 점수 → 등급 (≥80 고 / ≥60 중 / 그 외 저). 임계값은 여기 한 곳. */
+export function scoreTier(score: number): ScoreTier {
+  if (score >= 80) return "high";
+  if (score >= 60) return "mid";
+  return "low";
+}
+
+/** 가점 6항목 중 (점수/최대) 비율이 높은 상위 n개. Top3 카드 강점 태그용. */
+export function topStrengths(scores: ScoreBreakdown, n = 3): ScoreItemMeta[] {
+  return [...SCORE_ITEMS]
+    .sort((a, b) => scores[b.key] / b.max - scores[a.key] / a.max)
+    .slice(0, n);
+}

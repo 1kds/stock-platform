@@ -8,9 +8,9 @@ const TONE_NAME: Record<NonNullable<StatusDotProps["tone"]>, string> = {
   down: "하락",
 };
 
-/** 상태 점 (+ 선택 라벨). 정상=green, 경고=red(up), 하락=blue(down). */
+/** 상태 점 (+ 선택 라벨). 정상=green, 경고=amber(warn), 하락=blue(down). */
 export function StatusDot({ tone = "ok", label, className }: StatusDotProps) {
-  const c = tone === "ok" ? "bg-accent" : tone === "down" ? "bg-down" : "bg-up";
+  const c = tone === "ok" ? "bg-accent" : tone === "down" ? "bg-down" : "bg-warn";
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
       <span className={cn("size-2 rounded-full", c)} role="img" aria-label={TONE_NAME[tone]} />
