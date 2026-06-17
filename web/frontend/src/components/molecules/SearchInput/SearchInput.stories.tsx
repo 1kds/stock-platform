@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
+import { Calendar } from "lucide-react";
 import { SearchInput } from "./SearchInput";
 
 const meta: Meta<typeof SearchInput> = {
@@ -34,4 +35,9 @@ export const Controlled: Story = {
 /** a11y — placeholder 없이 aria-label로 접근 가능한 이름을 부여. */
 export const WithAriaLabel: Story = {
   args: { placeholder: undefined, "aria-label": "종목 검색" },
+};
+
+/** 좌측 아이콘 교체 — 날짜 검색 등에 Calendar 아이콘 사용. */
+export const CustomIcon: Story = {
+  args: { icon: Calendar, placeholder: "날짜 검색", "aria-label": "날짜 검색" },
 };

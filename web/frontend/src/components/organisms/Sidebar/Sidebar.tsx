@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ListOrdered, LineChart, History } from "lucide-react";
+import { LayoutDashboard, ListOrdered, LineChart, History, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavItem } from "@/components/molecules/NavItem";
 import type { SidebarProps } from "./Sidebar.types";
@@ -11,6 +11,7 @@ const ITEMS = [
   { href: "/scores", label: "종목 점수", icon: ListOrdered },
   { href: "/backtest", label: "백테스팅", icon: LineChart },
   { href: "/tracking", label: "트래킹", icon: History },
+  { href: "/report", label: "리포트", icon: FileText },
 ];
 
 /**

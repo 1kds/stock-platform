@@ -27,3 +27,20 @@ export const Miss: Story = {
     ret: -1.3,
   },
 };
+
+/** 토글로 펼친 상태 — 헤더에 셰브론, 아래에 상세 내용 노출. */
+export const Expanded: Story = {
+  args: {
+    featured: true,
+    date: "2026-05-28",
+    title: "2026-05-28 Top 3 추천",
+    stocks: "삼성전자 · NAVER · SK하이닉스",
+    hit: true,
+    ret: 3.4,
+    expanded: true,
+    onToggle: () => {},
+    children: (
+      <div className="text-sm text-muted-foreground">그날 추천 종목별 상세 분석이 여기에 표시됩니다.</div>
+    ),
+  },
+};

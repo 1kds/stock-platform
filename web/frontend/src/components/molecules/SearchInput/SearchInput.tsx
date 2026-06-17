@@ -2,7 +2,12 @@ import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SearchInputProps } from "./SearchInput.types";
 
-export function SearchInput({ containerClassName, className, ...props }: SearchInputProps) {
+export function SearchInput({
+  icon: Icon = Search,
+  containerClassName,
+  className,
+  ...props
+}: SearchInputProps) {
   return (
     <div
       className={cn(
@@ -10,7 +15,7 @@ export function SearchInput({ containerClassName, className, ...props }: SearchI
         containerClassName,
       )}
     >
-      <Search className="size-4 shrink-0 text-muted-foreground" />
+      <Icon className="size-4 shrink-0 text-muted-foreground" />
       <input
         type={props.type ?? "search"}
         aria-label={props["aria-label"] ?? props.placeholder ?? "검색"}

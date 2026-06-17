@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Target, TrendingUp, Trophy, Clock } from "lucide-react";
+import Link from "next/link";
+import { Target, TrendingUp, Trophy, Clock, ChevronRight } from "lucide-react";
 import {
   getScores,
   getTop3,
@@ -74,11 +75,20 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">오늘의 Top 3 추천 종목</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          분석 기준일 {top3.date} · 업데이트 {top3.updated_at}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">오늘의 Top 3 추천 종목</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            분석 기준일 {top3.date} · 업데이트 {top3.updated_at}
+          </p>
+        </div>
+        <Link
+          href="/report"
+          className="inline-flex shrink-0 items-center gap-1.5 self-center rounded-md border border-border bg-card px-3.5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-muted/50"
+        >
+          자세히 보기
+          <ChevronRight className="size-4" />
+        </Link>
       </div>
 
       <Top3Grid
