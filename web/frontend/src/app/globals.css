@@ -62,6 +62,10 @@
   --color-score-low: var(--score-low);
   --color-score-faint: var(--score-faint);
 
+  /* 푸터 전용 다크(항상 어두움) → bg-footer / text-footer-foreground */
+  --color-footer: var(--footer);
+  --color-footer-foreground: var(--footer-foreground);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -133,6 +137,10 @@
   --score-low: #c6dabf;
   /* 약점수용 중립 회색 (등급색 초록 계열과 분리 — 낮은 점수는 물러나 보이게) */
   --score-faint: #dde3e6;
+
+  /* === 푸터 (전용 다크 — 라이트/다크 무관하게 항상 검정 계열) === */
+  --footer: #15181b;
+  --footer-foreground: #9ca3a8;
 }
 
 .dark {
