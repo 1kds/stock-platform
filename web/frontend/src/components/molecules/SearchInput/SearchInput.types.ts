@@ -1,7 +1,10 @@
 import type { InputHTMLAttributes } from "react";
+import type { LucideIcon } from "lucide-react";
 
 export interface SearchInputProps extends InputHTMLAttributes<HTMLInputElement> {
   containerClassName?: string;
+  /** 좌측 아이콘 (기본 Search). 날짜 검색 등에는 Calendar 등을 넘겨 교체. */
+  icon?: LucideIcon;
   /**
    * 입력 필드의 접근 가능한 이름(스크린리더). 시각적 라벨이 없는 검색창이므로
    * 명시하지 않으면 `placeholder` → 최종 기본값 "검색" 순으로 폴백한다.

@@ -1,7 +1,18 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Tag } from "@/components/atoms/Tag";
 import type { AboutSectionsProps } from "./AboutSections.types";
+
+/** 소개 페이지 섹션 목록 — 본문(AboutSections)과 우측 목차(AboutNav)가 공유. */
+export const ABOUT_SECTIONS = [
+  { id: "overview", title: "프로젝트 개요" },
+  { id: "pipeline", title: "데이터 파이프라인" },
+  { id: "data", title: "수집 데이터" },
+  { id: "scores", title: "점수 체계" },
+  { id: "stack", title: "기술 스택" },
+  { id: "deploy", title: "배포 환경" },
+  { id: "team", title: "팀" },
+] as const;
 
 const STATS = [
   ["KOSPI·KOSDAQ", "매일 자동 분석 대상"],
@@ -15,6 +26,24 @@ const PIPELINE = [
   ["07:30", "Spark 분석", "7개 지표 → Top3"],
   ["08:00", "리포트 생성", "Top3 JSON 산출"],
   ["상시", "웹 서비스", "FastAPI + Next.js"],
+];
+const DATA_SOURCES: [string, string, string][] = [
+  [
+    "주가 · 수급",
+    "pykrx",
+    "OHLCV·이동평균(5·20·60)·거래량비율·52주 고저·변동성, 외국인·기관·개인 5일 순매수와 외국인 보유비율",
+  ],
+  ["공시", "DART API", "기업 공시 원문을 수집해 뉴스와 함께 통합 (dart-disclosures)"],
+  [
+    "재무",
+    "DART API",
+    "PER·PBR·ROE·EPS·배당수익률·부채비율·영업이익률·매출/영업이익 성장률 (+ 업종별 PER/PBR 25% 기준)",
+  ],
+  [
+    "뉴스 + 감성분석",
+    "네이버 + Gemini",
+    "뉴스·공시 제목을 Gemini(gemini-2.5-flash)가 투자 관점으로 −1~+1 점수화해 sentiment_score로 저장",
+  ],
 ];
 const SCORES: [string, string, string, string][] = [
   ["저평가", "undervaluation_score", "25", "업종 PER/PBR 25% 이하 + ROE 양호"],
@@ -39,10 +68,23 @@ const TEAM = [
   ["허재성", "Kubernetes 인프라", "허"],
 ];
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  id,
+  num,
+  title,
+  children,
+}: {
+  id: string;
+  num: number;
+  title: string;
+  children: ReactNode;
+}) {
   return (
-    <section className="flex scroll-mt-20 flex-col gap-4">
-      <h2 className="border-b border-border pb-2 text-base font-bold text-foreground sm:text-lg">
+    <section id={id} className="flex scroll-mt-24 flex-col gap-4">
+      <h2 className="flex items-baseline gap-3 border-b border-border pb-2.5 text-base font-bold text-foreground sm:text-lg">
+        <span className="text-sm font-bold tabular-nums text-accent">
+          {String(num).padStart(2, "0")}
+        </span>
         {title}
       </h2>
       {children}
@@ -71,28 +113,28 @@ function Bullets({ items }: { items: ReactNode[] }) {
   );
 }
 
-/** 소개 페이지 콘텐츠 — 히어로·개요·파이프라인·점수 체계·기술 스택·팀. */
+/** 소개 페이지 콘텐츠 — 히어로·개요·파이프라인·점수 체계·기술 스택·배포·팀. */
 export function AboutSections({ className }: AboutSectionsProps) {
   return (
-    <div className={cn("mx-auto flex max-w-4xl flex-col gap-8 sm:gap-10", className)}>
+    <div className={cn("flex w-full flex-col gap-12 sm:gap-14", className)}>
       {/* 히어로 */}
-      <div className="rounded-md bg-primary p-6 text-primary-foreground sm:p-8">
+      <div className="rounded-lg bg-primary p-6 text-primary-foreground shadow-sm sm:p-8">
         <p className="text-xs font-bold tracking-widest text-brand-light">PROJECT OVERVIEW</p>
-        <h1 className="mt-2 text-xl font-bold leading-snug sm:text-2xl">
+        <h1 className="mt-3 text-xl font-bold leading-snug sm:text-2xl">
           매일 장 마감 후 KOSPI·KOSDAQ 전 종목을 자동 수집·분석해, 다음 날 장 시작 전 08:00까지 그날의 Top3
           추천 종목을 제공하는 Hadoop·Kubernetes 기반 주식 통합 분석 플랫폼입니다.
         </h1>
-        <div className="mt-6 grid grid-cols-2 gap-4 border-t border-primary-foreground/15 pt-5 sm:grid-cols-4">
+        <div className="mt-7 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-primary-foreground/15 pt-6 sm:grid-cols-4">
           {STATS.map(([v, l]) => (
             <div key={l}>
-              <p className="text-lg font-bold text-brand-light sm:text-xl">{v}</p>
-              <p className="mt-0.5 text-xs text-primary-foreground/80">{l}</p>
+              <p className="text-xl font-bold text-brand-light sm:text-2xl">{v}</p>
+              <p className="mt-1 text-xs text-primary-foreground/80">{l}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <Section title="프로젝트 개요">
+      <Section id={ABOUT_SECTIONS[0].id} num={1} title={ABOUT_SECTIONS[0].title}>
         <Lead>
           개인 투자자가 매일 KOSPI·KOSDAQ 전 종목의 시세·수급·뉴스·재무를 직접 살펴 유망 종목을 가려내는 일은
           현실적으로 불가능합니다. 이 플랫폼은 그 반복 작업을 분산 처리 파이프라인으로 자동화합니다.
@@ -126,7 +168,7 @@ export function AboutSections({ className }: AboutSectionsProps) {
         />
       </Section>
 
-      <Section title="데이터 파이프라인">
+      <Section id={ABOUT_SECTIONS[1].id} num={2} title={ABOUT_SECTIONS[1].title}>
         <Lead>
           데이터는 수집 → HDFS 저장 → Spark 분석 → 리포트 생성 → 웹 제공의 다섯 단계를 매일 순서대로 흐릅니다.
           각 단계는 정해진 시각에 실행되는 독립 작업입니다.
@@ -145,25 +187,64 @@ export function AboutSections({ className }: AboutSectionsProps) {
           <code className="text-xs text-accent">/result</code>를 명확히 분리해, 웹은 결과만 읽고 원천을 절대
           건드리지 않습니다.
         </Body>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-stretch">
-          {PIPELINE.map(([time, title, desc], i) => (
-            <div key={title} className="flex items-center gap-2">
-              <div className="flex min-w-0 flex-1 flex-col gap-1 rounded-md border border-border bg-card p-3.5 sm:min-w-40">
-                <span className="text-xs font-bold text-accent">{time}</span>
-                <span className="text-sm font-bold text-foreground">{title}</span>
-                <span className="text-xs text-muted-foreground">{desc}</span>
+        {/* 위 3개 · 아래 2개 — 같은 줄 안에서 화살표로 연결(데스크톱). 모바일은 세로 적층. */}
+        <div className="grid grid-cols-1 items-stretch gap-2 sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
+          {PIPELINE.map(([time, title, desc], i) => {
+            const lastInRow = i === 2 || i === PIPELINE.length - 1;
+            return (
+              <Fragment key={title}>
+                <div className="flex flex-col gap-1 rounded-md border border-border bg-card p-3.5 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold tabular-nums text-accent-foreground">
+                      {i + 1}
+                    </span>
+                    <span className="text-xs font-bold text-accent">{time}</span>
+                  </div>
+                  <span className="mt-0.5 text-sm font-bold text-foreground">{title}</span>
+                  <span className="text-xs text-muted-foreground">{desc}</span>
+                </div>
+                {!lastInRow && (
+                  <span
+                    className="hidden items-center justify-center text-base text-brand-sage sm:flex"
+                    aria-hidden
+                  >
+                    →
+                  </span>
+                )}
+              </Fragment>
+            );
+          })}
+        </div>
+      </Section>
+
+      <Section id={ABOUT_SECTIONS[2].id} num={3} title={ABOUT_SECTIONS[2].title}>
+        <Lead>
+          매일 저녁 네 종류의 수집기가 KOSPI·KOSDAQ 전 종목의 시세·수급·공시·뉴스를 모읍니다. 수집한 데이터는
+          모두 Parquet 형식으로 HDFS의 <code className="text-xs text-accent">/data</code> 영역에 일자 파티션으로
+          저장됩니다.
+        </Lead>
+        <Body>
+          주가·수급은 pykrx로, 공시·재무는 금융감독원 DART API로 받아옵니다. 뉴스는 네이버에서 크롤링한 뒤 제목을
+          Gemini 감성 분석기에 넣어 투자 관점의 점수(sentiment_score)를 함께 붙여 둡니다. 다음 단계인 Spark
+          분석의 7개 점수는 모두 이 원천 데이터를 근거로 계산됩니다.
+        </Body>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {DATA_SOURCES.map(([name, tool, desc]) => (
+            <div
+              key={name}
+              className="flex flex-col gap-2 rounded-md border border-border bg-card p-4 shadow-sm"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-bold text-foreground">{name}</span>
+                <Tag tone="green">{tool}</Tag>
               </div>
-              {i < PIPELINE.length - 1 && (
-                <span className="rotate-90 text-brand-sage sm:rotate-0" aria-hidden>
-                  →
-                </span>
-              )}
+              <p className="text-xs leading-relaxed text-muted-foreground">{desc}</p>
             </div>
           ))}
         </div>
       </Section>
 
-      <Section title="점수 체계 (7항목)">
+      <Section id={ABOUT_SECTIONS[3].id} num={4} title={`${ABOUT_SECTIONS[3].title} (7항목)`}>
         <Lead>
           모든 종목은 저평가·수급·거래량·뉴스·모멘텀·실적의 6개 가점 항목과 리스크 감점으로 평가됩니다. 각 항목
           점수를 합산한 final_score로 종목을 정렬해 상위 3개를 추천합니다.
@@ -174,7 +255,7 @@ export function AboutSections({ className }: AboutSectionsProps) {
           단기 급등에 따른 과열 종목이 무작정 상위로 올라오지 않도록 보정합니다.
         </Body>
         <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-          <div className="min-w-[34rem] overflow-hidden rounded-md border border-border">
+          <div className="min-w-[34rem] overflow-hidden rounded-md border border-border shadow-sm">
             <table className="w-full text-sm">
               <thead className="bg-muted/40 text-xs text-muted-foreground">
                 <tr>
@@ -185,37 +266,47 @@ export function AboutSections({ className }: AboutSectionsProps) {
                 </tr>
               </thead>
               <tbody>
-                {SCORES.map(([ko, en, max, crit], i) => (
-                  <tr key={en} className={cn(i < SCORES.length - 1 && "border-b border-border")}>
-                    <td className="px-4 py-2.5 font-semibold text-foreground">{ko}</td>
-                    <td className="px-4 py-2.5 text-muted-foreground">{en}</td>
-                    <td className="px-4 py-2.5 text-center">
-                      <span
-                        className={cn(
-                          "rounded px-2 py-0.5 text-xs font-bold",
-                          max === "감점" ? "bg-down/10 text-down" : "bg-accent/10 text-accent",
-                        )}
-                      >
-                        {max}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5 text-muted-foreground">{crit}</td>
-                  </tr>
-                ))}
+                {SCORES.map(([ko, en, max, crit]) => {
+                  const penalty = max === "감점";
+                  return (
+                    <tr
+                      key={en}
+                      className={cn(
+                        "border-b border-border last:border-0",
+                        penalty ? "bg-down/5" : "even:bg-muted/20",
+                      )}
+                    >
+                      <td className="px-4 py-2.5 font-semibold text-foreground">{ko}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground">{en}</td>
+                      <td className="px-4 py-2.5 text-center">
+                        <span
+                          className={cn(
+                            "rounded px-2 py-0.5 text-xs font-bold",
+                            penalty ? "bg-down/10 text-down" : "bg-accent/10 text-accent",
+                          )}
+                        >
+                          {max}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 text-muted-foreground">{crit}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
-        <p className="rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">
+        <p className="rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm">
           final_score = 저평가 + 수급 + 거래량 + 뉴스 + 모멘텀 + 실적 − 리스크 (가점 만점 100 − 감점)
         </p>
         <Body>
-          뉴스 점수는 현재 긍정·부정 키워드 매칭으로 단순 가감점하는 방식입니다. 아키텍처에 그려진 LLM 기반 감성
-          분석은 아직 도입하지 않았으며, 향후 확장 계획으로 남겨 두었습니다.
+          뉴스 점수는 Google Gemini(gemini-2.5-flash) 기반 감성 분석으로 산출합니다. 수집 단계에서 뉴스·공시
+          제목을 LLM이 투자 관점(수급·실적·리스크·모멘텀)으로 −1~+1 점수화하고, Spark 분석이 이를 종목별로
+          합산해 뉴스 점수에 반영합니다. 감성 점수가 없을 때는 긍정·부정 키워드 매칭으로 보완합니다.
         </Body>
       </Section>
 
-      <Section title="기술 스택">
+      <Section id={ABOUT_SECTIONS[4].id} num={5} title={ABOUT_SECTIONS[4].title}>
         <Lead>
           각 단계는 그 역할에 맞는 도구로 구현됩니다. 파이썬 수집기부터 Spark 분석, FastAPI·Next.js 웹,
           Kubernetes 운영까지 데이터 흐름을 따라 스택이 나뉩니다.
@@ -228,7 +319,10 @@ export function AboutSections({ className }: AboutSectionsProps) {
         </Body>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {STACK.map(([layer, techs]) => (
-            <div key={layer} className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4">
+            <div
+              key={layer}
+              className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4 shadow-sm"
+            >
               <span className="text-sm font-bold text-foreground">{layer}</span>
               <div className="flex flex-wrap gap-1.5">
                 {techs.map((t) => (
@@ -242,7 +336,7 @@ export function AboutSections({ className }: AboutSectionsProps) {
         </div>
       </Section>
 
-      <Section title="배포 환경">
+      <Section id={ABOUT_SECTIONS[5].id} num={6} title={ABOUT_SECTIONS[5].title}>
         <Lead>
           전체 시스템은 master 1대와 worker 3대로 구성된 Kubernetes 클러스터 위에서 동작합니다. 노드별로 역할을
           나눠 수집·분석·웹 부하를 분리합니다.
@@ -260,8 +354,9 @@ export function AboutSections({ className }: AboutSectionsProps) {
               report-generator(08:00)가 매일 순서대로 실행됩니다.
             </>,
             <>
-              <span className="font-semibold text-foreground">Deployment</span> — fastapi-server(:8000)와
-              dashboard(:3000)가 상시 1개 복제본으로 떠 있고, liveness probe로 상태를 확인합니다.
+              <span className="font-semibold text-foreground">Deployment</span> —
+              fastapi-server(:8000)·dashboard(:3000)·realtime-tracker(:8001)가 상시 1개 복제본으로 떠 있고,
+              liveness probe로 상태를 확인합니다.
             </>,
             <>
               <span className="font-semibold text-foreground">노드 분리</span> — nodeSelector로 수집은 worker1,
@@ -271,14 +366,17 @@ export function AboutSections({ className }: AboutSectionsProps) {
         />
       </Section>
 
-      <Section title="팀">
+      <Section id={ABOUT_SECTIONS[6].id} num={7} title={ABOUT_SECTIONS[6].title}>
         <Lead>
           4명이 데이터 흐름의 각 구간을 나눠 맡았습니다. 수집·저장·분석·웹·인프라가 한 줄로 이어지도록 공통 규약을
           기준 삼아 협업합니다.
         </Lead>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {TEAM.map(([name, role, initial]) => (
-            <div key={name} className="flex items-center gap-3 rounded-md border border-border bg-card p-4">
+            <div
+              key={name}
+              className="flex items-center gap-3 rounded-md border border-border bg-card p-4 shadow-sm"
+            >
               <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                 {initial}
               </span>
