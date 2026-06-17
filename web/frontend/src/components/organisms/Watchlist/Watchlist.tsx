@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -15,9 +15,12 @@ import type { WatchlistProps } from "./Watchlist.types";
 /** Top3 다음 후보(4~10위) 간략 리스트 — 읽기 전용 + 전체 보기 링크. */
 export function Watchlist({ rows, href = "/scores", className }: WatchlistProps) {
   return (
-    <section className={cn("flex flex-col rounded-md border border-border bg-card", className)}>
+    <section className={cn("flex flex-col rounded-md border border-border bg-card shadow-sm", className)}>
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 className="text-sm font-bold text-foreground">그 다음 후보</h2>
+        <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
+          <Eye className="size-4 text-muted-foreground" aria-hidden />
+          그 다음 후보
+        </h2>
         <Link
           href={href}
           className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
@@ -28,22 +31,22 @@ export function Watchlist({ rows, href = "/scores", className }: WatchlistProps)
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-12">순위</TableHead>
+            <TableHead className="w-12 text-center">순위</TableHead>
             <TableHead>종목</TableHead>
             <TableHead className="w-20">시장</TableHead>
-            <TableHead className="w-16 text-right">점수</TableHead>
+            <TableHead className="w-16 pr-4 text-right">점수</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((r) => (
             <TableRow key={r.symbol}>
-              <TableCell className="tabular-nums text-muted-foreground">{r.rank}</TableCell>
+              <TableCell className="text-center tabular-nums text-muted-foreground">{r.rank}</TableCell>
               <TableCell>
                 <span className="font-medium text-foreground">{r.name}</span>
                 <span className="ml-1.5 text-xs text-muted-foreground">{r.symbol}</span>
               </TableCell>
               <TableCell className="text-xs text-muted-foreground">{r.market ?? "—"}</TableCell>
-              <TableCell className="text-right">
+              <TableCell className="pr-4 text-right">
                 <ScoreBadge score={r.final_score} />
               </TableCell>
             </TableRow>
