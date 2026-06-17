@@ -32,7 +32,9 @@
 - 클래스: `text-up` `text-down` `text-flat`
 
 ### 점수 등급색
-- `--score-high`(green) / `--score-mid`(light) / `--score-low`(sage) → 점수 바·뱃지.
+- `--score-high`(green) / `--score-mid`(light) / `--score-low`(sage) → 점수 바·분포.
+- `--score-faint`(중립 회색) → 약점수 뱃지 배경. 낮은 점수를 등급색(초록)에서 빼내 물러나 보이게.
+- **ScoreBadge는 4단계 색**(`lib/scores.ts scoreBadgeLevel`): strong(≥85, petrol) / high(≥70, green) / mid(≥55, light) / low(<55, faint 회색). 점수 간 대비를 시각화. (집계용 `scoreTier`는 3등급 그대로.)
 
 ### 상태·감점색 (등락색과 분리)
 빨강=상승(up)이므로, "나쁨" 신호에 up을 빌려 쓰지 않는다. 의미별 전용 토큰.

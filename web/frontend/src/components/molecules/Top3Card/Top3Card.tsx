@@ -12,7 +12,7 @@ export function Top3Card({ item, rankAccent = false, onClick, className }: Top3C
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full flex-col gap-2.5 rounded-md border bg-card p-4 text-left transition-shadow hover:shadow-sm",
+        "flex w-full flex-col gap-2.5 rounded-md border bg-card p-4 text-left shadow-sm transition-shadow hover:shadow-md",
         rankAccent ? "border-primary" : "border-border",
         className,
       )}
@@ -40,7 +40,7 @@ export function Top3Card({ item, rankAccent = false, onClick, className }: Top3C
           );
         })}
       </div>
-      <p className="text-sm text-muted-foreground">{item.reason}</p>
+      <p className="mt-auto text-sm text-muted-foreground">{item.reason}</p>
     </button>
   );
 }

@@ -1,3 +1,5 @@
+import type { LucideIcon } from "lucide-react";
+
 export interface StatCardProps {
   label: string;
   value: string;
@@ -7,5 +9,7 @@ export interface StatCardProps {
   sub?: string;
   /** 값 색상: 수익률 등 부호 강조용 */
   valueTone?: "default" | "up" | "down";
+  /** 선택: 우상단 지표 아이콘 (lucide) — 표현용, 색은 중립 */
+  icon?: LucideIcon;
   className?: string;
 }

@@ -55,6 +55,8 @@ export function BacktestResult({ data, className }: BacktestResultProps) {
                 tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
               />
               <Tooltip
+                // 마우스를 따라다니지 않고 차트 상단에 고정(세로 0). 가로는 해당 막대에 맞춤.
+                position={{ y: 0 }}
                 cursor={{ fill: "var(--muted)" }}
                 contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", fontSize: 12 }}
               />

@@ -29,7 +29,7 @@ export function MarketOverview({ summary, className }: MarketOverviewProps) {
   return (
     <section
       aria-label="오늘 분석 전체 요약"
-      className={cn("rounded-md border border-border bg-card p-4", className)}
+      className={cn("rounded-md border border-border bg-card p-4 shadow-sm", className)}
     >
       <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
         <Stat label="분석 종목" value={`${total}종목`} />

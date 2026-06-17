@@ -6,7 +6,9 @@ export type ScoreSortKey =
   | "undervaluation_score"
   | "investor_flow_score"
   | "volume_spike_score"
+  | "news_keyword_score"
   | "momentum_score"
+  | "earnings_score"
   | "name";
 
 export interface ScoresTableProps {

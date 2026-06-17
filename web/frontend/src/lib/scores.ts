@@ -38,6 +38,20 @@ export function scoreTier(score: number): ScoreTier {
   return "low";
 }
 
+/**
+ * 뱃지 색 단계 — 집계용 `scoreTier`(3등급)보다 한 단계 세분.
+ * 점수 간 시각 대비를 키워 고점은 도드라지고 저점은 물러나 보이게 한다.
+ */
+export type ScoreBadgeLevel = "strong" | "high" | "mid" | "low";
+
+/** 최종 점수 → 뱃지 색 단계 (≥85 강 / ≥70 고 / ≥55 중 / 그 외 저). 임계값은 여기 한 곳. */
+export function scoreBadgeLevel(score: number): ScoreBadgeLevel {
+  if (score >= 85) return "strong";
+  if (score >= 70) return "high";
+  if (score >= 55) return "mid";
+  return "low";
+}
+
 /** 가점 6항목 중 (점수/최대) 비율이 높은 상위 n개. Top3 카드 강점 태그용. */
 export function topStrengths(scores: ScoreBreakdown, n = 3): ScoreItemMeta[] {
   return [...SCORE_ITEMS]

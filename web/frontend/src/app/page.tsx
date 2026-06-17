@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Target, TrendingUp, Trophy, Clock } from "lucide-react";
 import {
   getScores,
   getTop3,
@@ -42,7 +43,7 @@ export default function DashboardPage() {
 
   const kpi: StatCardProps[] = tracking
     ? [
-        { label: "적중률", value: `${tracking.summary.hit_rate}%`, sub: "최근 추천 기준" },
+        { label: "적중률", value: `${tracking.summary.hit_rate}%`, sub: "최근 추천 기준", icon: Target },
         {
           label: "평균 수익률",
           value: signedPercent(tracking.summary.avg_return),
@@ -52,12 +53,15 @@ export default function DashboardPage() {
               : tracking.summary.avg_return < 0
                 ? "down"
                 : "default",
+          sub: "추천 종목 평균",
+          icon: TrendingUp,
         },
-        { label: "추천 종목", value: String(top3.top3.length), sub: "오늘 Top3" },
+        { label: "추천 종목", value: String(top3.top3.length), sub: "오늘 Top3", icon: Trophy },
         {
           label: "마지막 업데이트",
           value: top3.updated_at.split(" ")[1] ?? top3.updated_at,
           sub: top3.date,
+          icon: Clock,
         },
       ]
     : [];
@@ -90,14 +94,14 @@ export default function DashboardPage() {
       {tracking && <KpiGrid items={kpi} />}
 
       {scores && (
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid items-start gap-4 lg:grid-cols-3">
           <Watchlist rows={watchlistRows} className="lg:col-span-2" />
           <SectorDistribution data={sectors} />
         </div>
       )}
 
       {tracking && (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-4 lg:grid-cols-2">
           <ReturnChart data={tracking.return_chart} />
           <HistoryTable rows={tracking.history} />
         </div>

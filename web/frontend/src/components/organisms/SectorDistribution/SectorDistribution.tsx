@@ -1,3 +1,4 @@
+import { BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SectorDistributionProps } from "./SectorDistribution.types";
 
@@ -5,9 +6,12 @@ import type { SectorDistributionProps } from "./SectorDistribution.types";
 export function SectorDistribution({ data, className }: SectorDistributionProps) {
   const max = data.reduce((m, d) => Math.max(m, d.count), 0) || 1;
   return (
-    <section className={cn("flex flex-col rounded-md border border-border bg-card", className)}>
+    <section className={cn("flex flex-col rounded-md border border-border bg-card shadow-sm", className)}>
       <div className="border-b border-border px-4 py-3">
-        <h2 className="text-sm font-bold text-foreground">업종 분포</h2>
+        <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
+          <BarChart3 className="size-4 text-muted-foreground" aria-hidden />
+          업종 분포
+        </h2>
       </div>
       <ul className="flex flex-col gap-2.5 p-4">
         {data.map((d) => (

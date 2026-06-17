@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Target, TrendingUp, CalendarRange } from "lucide-react";
 import { getTracking, type TrackingResponse } from "@/lib/api";
 import { signedPercent } from "@/lib/utils";
 import type { StatCardProps } from "@/components/molecules/StatCard";
@@ -36,13 +37,15 @@ export default function TrackingPage() {
       label: "적중률",
       value: `${hitRate}%`,
       sub: `${hitDays} / ${visible.length} 적중일`,
+      icon: Target,
     },
     {
       label: "평균 수익률",
       value: signedPercent(avgReturn),
       valueTone: avgReturn > 0 ? "up" : avgReturn < 0 ? "down" : "default",
+      icon: TrendingUp,
     },
-    { label: "추적 기간", value: period, sub: "필터 기준" },
+    { label: "추적 기간", value: period, sub: "필터 기준", icon: CalendarRange },
   ];
 
   return (

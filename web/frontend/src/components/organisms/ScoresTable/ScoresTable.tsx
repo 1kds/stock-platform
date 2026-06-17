@@ -26,9 +26,42 @@ const SORT_OPTIONS: { value: ScoreSortKey; label: string }[] = [
   { value: "undervaluation_score", label: "저평가순" },
   { value: "investor_flow_score", label: "수급순" },
   { value: "volume_spike_score", label: "거래량순" },
+  { value: "news_keyword_score", label: "뉴스순" },
   { value: "momentum_score", label: "모멘텀순" },
+  { value: "earnings_score", label: "실적순" },
   { value: "name", label: "종목명순" },
 ];
+
+// 보조 점수 칼럼 최대 배점(common.md §5) — 미니 막대 비율 계산용.
+const COL_MAX = {
+  undervaluation: 25,
+  investor_flow: 20,
+  volume_spike: 15,
+  news_keyword: 10,
+  momentum: 20,
+  earnings: 10,
+} as const;
+
+/**
+ * 점수 숫자 + 최대배점 대비 세로 미니 막대(숫자 오른쪽, 아래→위로 차오름).
+ * 색은 단일 초록(accent)에 채운 양(%) 비례 투명도(0.35~1.0)를 줘 연속적으로 희미→진하게.
+ */
+function ScoreCell({ value, max }: { value: number; max: number }) {
+  const pct = max ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
+  // 적게 차면 희미(0.35) → 많이 차면 진함(1.0), 채운 양에 따라 연속 변화.
+  const opacity = Math.round((0.35 + (pct / 100) * 0.65) * 100) / 100;
+  return (
+    <div className="flex items-center justify-end gap-2">
+      <span className="tabular-nums text-foreground">{value}</span>
+      <span className="flex h-6 w-3.5 items-end overflow-hidden rounded-[2px] bg-muted" aria-hidden>
+        <span
+          className="block w-full rounded-[2px] bg-accent"
+          style={{ height: `${pct}%`, opacity }}
+        />
+      </span>
+    </div>
+  );
+}
 
 /** 정렬 화살표 아이콘 — 현재 정렬 컬럼/방향 반영. */
 function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
@@ -52,7 +85,9 @@ export function ScoresTable({ rows, className }: ScoresTableProps) {
       undervaluation_score: (r) => r.undervaluation_score,
       investor_flow_score: (r) => r.investor_flow_score,
       volume_spike_score: (r) => r.volume_spike_score,
+      news_keyword_score: (r) => r.news_keyword_score,
       momentum_score: (r) => r.momentum_score,
+      earnings_score: (r) => r.earnings_score,
       name: (r) => r.name,
     },
     initialSort: { key: "final_score", dir: "desc" },
@@ -141,7 +176,9 @@ export function ScoresTable({ rows, className }: ScoresTableProps) {
               {head("undervaluation_score", "저평가", "right")}
               {head("investor_flow_score", "수급", "right")}
               {head("volume_spike_score", "거래량", "right")}
+              {head("news_keyword_score", "뉴스", "right")}
               {head("momentum_score", "모멘텀", "right")}
+              {head("earnings_score", "실적", "right")}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -158,15 +195,17 @@ export function ScoresTable({ rows, className }: ScoresTableProps) {
                 <TableCell className="text-center">
                   <ScoreBadge score={r.final_score} />
                 </TableCell>
-                <TableCell className="text-right tabular-nums">{r.undervaluation_score}</TableCell>
-                <TableCell className="text-right tabular-nums">{r.investor_flow_score}</TableCell>
-                <TableCell className="text-right tabular-nums">{r.volume_spike_score}</TableCell>
-                <TableCell className="text-right tabular-nums">{r.momentum_score}</TableCell>
+                <TableCell><ScoreCell value={r.undervaluation_score} max={COL_MAX.undervaluation} /></TableCell>
+                <TableCell><ScoreCell value={r.investor_flow_score} max={COL_MAX.investor_flow} /></TableCell>
+                <TableCell><ScoreCell value={r.volume_spike_score} max={COL_MAX.volume_spike} /></TableCell>
+                <TableCell><ScoreCell value={r.news_keyword_score} max={COL_MAX.news_keyword} /></TableCell>
+                <TableCell><ScoreCell value={r.momentum_score} max={COL_MAX.momentum} /></TableCell>
+                <TableCell><ScoreCell value={r.earnings_score} max={COL_MAX.earnings} /></TableCell>
               </TableRow>
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={10} className="py-8 text-center text-sm text-muted-foreground">
                   조건에 맞는 종목이 없습니다
                 </TableCell>
               </TableRow>

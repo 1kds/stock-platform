@@ -56,10 +56,11 @@
   --color-warn: var(--warn);
   --color-danger: var(--danger);
 
-  /* 점수 등급 → bg-score-high / bg-score-mid / bg-score-low */
+  /* 점수 등급 → bg-score-high / bg-score-mid / bg-score-low / bg-score-faint */
   --color-score-high: var(--score-high);
   --color-score-mid: var(--score-mid);
   --color-score-low: var(--score-low);
+  --color-score-faint: var(--score-faint);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -130,6 +131,8 @@
   --score-high: #1a936f;
   --score-mid: #88d498;
   --score-low: #c6dabf;
+  /* 약점수용 중립 회색 (등급색 초록 계열과 분리 — 낮은 점수는 물러나 보이게) */
+  --score-faint: #dde3e6;
 }
 
 .dark {
@@ -174,6 +177,7 @@
   --score-high: #1a936f;
   --score-mid: #88d498;
   --score-low: #c6dabf;
+  --score-faint: #24414c;
 }
 
 @layer base {
