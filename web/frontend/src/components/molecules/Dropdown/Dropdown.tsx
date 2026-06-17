@@ -15,7 +15,7 @@ const TRIGGER_CLASS =
  * - options가 없으면 표시 전용(목업) 트리거.
  * - 키보드: Esc 닫기, ArrowUp/Down 항목 이동, Enter/Space 선택, 열릴 때 포커스 이동.
  */
-export function Dropdown({ label, options, value, onChange, className }: DropdownProps) {
+export function Dropdown({ label, options, value, onChange, bare, className }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const ref = useRef<HTMLDivElement>(null);
@@ -39,7 +39,11 @@ export function Dropdown({ label, options, value, onChange, className }: Dropdow
   }, [open]);
 
   const selected = options?.find((o) => o.value === value);
-  const triggerText = selected ? `${label}: ${selected.label ?? selected.value}` : label;
+  const triggerText = selected
+    ? bare
+      ? (selected.label ?? selected.value)
+      : `${label}: ${selected.label ?? selected.value}`
+    : label;
 
   // 열기: 현재 선택 항목(없으면 첫 항목)을 활성 인덱스로 잡고 메뉴를 연다.
   function openMenu() {

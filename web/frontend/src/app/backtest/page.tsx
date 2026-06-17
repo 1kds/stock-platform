@@ -8,23 +8,30 @@ import {
 } from "@/components/organisms/BacktestForm";
 import { BacktestResult } from "@/components/organisms/BacktestResult";
 import { LoadingState, ErrorState } from "@/components/organisms/StateViews";
-import { SCORE_ITEMS } from "@/lib/scores";
+import { DEFAULT_CONDITIONS, formatCondition } from "@/lib/backtest";
 
-// 폼 라벨 → common.md 점수 항목 영문 key (indicators 응답 계약).
-const INDICATOR_KEY: Record<string, string> = Object.fromEntries(
-  SCORE_ITEMS.map((it) => [it.label, it.key]),
-);
 // 보유 기간 라벨 → 일수.
 const HOLD_DAYS: Record<string, number> = { "T+1": 1, "T+3": 3, "T+5": 5, "T+20": 20 };
 
 const INITIAL_FORM: BacktestFormState = {
   start: "2026-01-01",
   end: "2026-05-29",
-  indicators: ["저평가", "수급", "거래량"],
+  conditions: DEFAULT_CONDITIONS,
+  symbols: [],
   hold: "T+3",
+  universe: "all",
+  stopLoss: "5",
+  takeProfit: "10",
+  capital: "10000000",
+  positionPct: "20",
+  fee: "0.015",
+  tax: "0.23",
 };
 
-/** mock 응답 + 폼 입력 → 클라이언트 계산으로 결과 반영. */
+/**
+ * mock 응답 + 폼 입력 → 클라이언트 계산으로 결과 반영.
+ * (UI/폼 단계: 조건식은 결과에 반영되지 않고 보유기간만 반영. 실제 조건 평가는 백엔드 실연동 단계.)
+ */
 function applyForm(base: BacktestResponse, form: BacktestFormState): BacktestResponse {
   const horizons = base.returns_by_horizon;
   const target = horizons.find((h) => h.horizon === form.hold) ?? horizons.at(-1);
@@ -32,7 +39,7 @@ function applyForm(base: BacktestResponse, form: BacktestFormState): BacktestRes
     ...base,
     period: { start: form.start, end: form.end },
     hold: HOLD_DAYS[form.hold] ?? base.hold,
-    indicators: form.indicators.map((l) => INDICATOR_KEY[l] ?? l),
+    indicators: form.conditions.map((c) => c.indicator),
     summary: {
       ...base.summary,
       // 선택한 보유기간의 Top3 수익률을 평균 수익률 지표에 반영.
@@ -69,7 +76,32 @@ export default function BacktestPage() {
       <BacktestForm value={form} onChange={setForm} onRun={setSubmitted} />
       {error && <ErrorState message={error} />}
       {!result && !error && <LoadingState />}
-      {result && <BacktestResult data={result} />}
+      {result && (
+        <>
+          {submitted.conditions.some((c) => c.value !== "") && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-semibold text-foreground">적용 조건</span>
+              {submitted.conditions
+                .filter((c) => c.value !== "")
+                .map((c, i) => (
+                  <span
+                    key={i}
+                    className="rounded-md border border-border bg-muted/40 px-2 py-1 text-xs tabular-nums text-muted-foreground"
+                  >
+                    {formatCondition(c)}
+                  </span>
+                ))}
+              {submitted.symbols.length > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  · 종목 {submitted.symbols.join(", ")}
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground">· 보유 {submitted.hold}</span>
+            </div>
+          )}
+          <BacktestResult data={result} />
+        </>
+      )}
     </div>
   );
 }

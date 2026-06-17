@@ -17,5 +17,7 @@ export interface DropdownProps {
   value?: string;
   /** 선택 변경 콜백(controlled). */
   onChange?: (value: string) => void;
+  /** true면 트리거에 접두 라벨("정렬:")을 숨기고 선택값만 표시(접근성 라벨은 유지). */
+  bare?: boolean;
   className?: string;
 }

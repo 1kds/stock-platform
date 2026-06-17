@@ -29,3 +29,13 @@ function ControlledDropdown() {
 export const Controlled: Story = {
   render: () => <ControlledDropdown />,
 };
+
+function BareDropdown() {
+  const [value, setValue] = useState("전기전자");
+  return <Dropdown label="업종" bare options={SECTORS} value={value} onChange={setValue} />;
+}
+
+/** bare — 접두 라벨 없이 선택값만 표시(조건 빌더 등 좁은 공간용). */
+export const Bare: Story = {
+  render: () => <BareDropdown />,
+};
